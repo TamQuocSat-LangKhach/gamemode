@@ -563,12 +563,12 @@ local jiange__keding = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and #TargetGroup:getRealTargets(data.tos) == 1 and
       (data.card.trueName == "slash" or data.card:isCommonTrick()) and
-      #U.getUseExtraTargets(player.room, data, false) > 0 and
+      #player.room:getUseExtraTargets(data) > 0 and
       not player:isKongcheng()
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = U.getUseExtraTargets(room, data, false)
+    local targets = room:getUseExtraTargets(data)
     local _, dat = room:askForUseActiveSkill(player, "jiange__keding_active",
       "#jiange__keding-choose:::"..data.card:toLogString(), true, {exclusive_targets = targets}, false)
     if dat then

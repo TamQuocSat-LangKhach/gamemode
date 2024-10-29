@@ -430,7 +430,7 @@ local v33__zhanshen_trigger = fk.CreateTriggerSkill{
         return player:getMark("v33__zhanshen_2") > 0 and data.card.trueName == "slash"
       elseif event == fk.AfterCardTargetDeclared then
         return player:getMark("v33__zhanshen_3") > 0 and data.card.trueName == "slash" and
-          #U.getUseExtraTargets(player.room, data, false) > 0
+          #player.room:getUseExtraTargets(data) > 0
       end
     end
   end,
@@ -438,7 +438,7 @@ local v33__zhanshen_trigger = fk.CreateTriggerSkill{
     if event == fk.DrawNCards or event == fk.PreCardUse then
       return true
     elseif event == fk.AfterCardTargetDeclared then
-      local targets = U.getUseExtraTargets(player.room, data, false)
+      local targets = player.room:getUseExtraTargets(data)
       local tos = player.room:askForChoosePlayers(player, targets, 1, 1,
         "#v33__zhanshen-choose:::"..data.card:toLogString(), "v33__zhanshen", true)
       if #tos > 0 then

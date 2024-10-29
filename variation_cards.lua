@@ -772,7 +772,7 @@ local variation_rule = fk.CreateTriggerSkill{
         if data.extra_data and data.extra_data.variation then
           if table.find(data.card:getMarkNames(), function(name)
             return data.card:getMark(name) == Fk:translate("variation_addtarget") end) then
-            return #U.getUseExtraTargets(player.room, data, false) > 0
+            return #player.room:getUseExtraTargets(data) > 0
           end
           if table.find(data.card:getMarkNames(), function(name)
             return data.card:getMark(name) == Fk:translate("variation_minustarget") end) then
@@ -805,7 +805,7 @@ local variation_rule = fk.CreateTriggerSkill{
       local room = player.room
       if table.find(data.card:getMarkNames(), function(name)
         return data.card:getMark(name) == Fk:translate("variation_addtarget") end) then
-          local tos = room:askForChoosePlayers(player, U.getUseExtraTargets(room, data, false), 1, 1,
+          local tos = room:askForChoosePlayers(player, room:getUseExtraTargets(data), 1, 1,
             "#variation_addtarget:::"..data.card:toLogString(), "variation", true)
           if #tos > 0 then
             self.cost_data = tos

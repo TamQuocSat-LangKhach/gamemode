@@ -327,7 +327,7 @@ local bianfa = fk.CreateTriggerSkill{
       return target == player
     else
       return target == player and isGeneral(player, "shangyang")
-      and data.card.trueName == "shangyang_reform" and #U.getUseExtraTargets(player.room, data, false) > 0
+      and data.card.trueName == "shangyang_reform" and #player.room:getUseExtraTargets(data) > 0
     end
   end,
   on_cost = function(self, event, target, player, data)
@@ -335,7 +335,7 @@ local bianfa = fk.CreateTriggerSkill{
       return true
     else
       local room = player.room
-      local targets = U.getUseExtraTargets(room, data, false)
+      local targets = room:getUseExtraTargets(data)
       local to = room:askForChoosePlayers(player, targets, 1, 1, "#kq__bianfa-choose:::"..data.card:toLogString(), self.name, true)
       if #to > 0 then
         self.cost_data = to[1]
