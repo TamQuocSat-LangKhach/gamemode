@@ -1,29 +1,4 @@
 
--- 准备多个角色的武将/性别/势力（会判断隐匿）
----@param players table<ServerPlayer> @ 需要准备的角色表
----@param generals table<string> @ 角色对应的武将表
----@param reveal boolean|nil @ 是否解除隐匿
-local prepareHiddenGeneral = function (players, generals, reveal)
-  local room = players[1].room
-  for i, player in ipairs(players) do
-    local general = generals[i]
-    player.general = general
-    if not reveal and table.find(Fk.generals[general]:getSkillNameList(player.role == "lord"), function (s)
-      return Fk.skills[s].isHiddenSkill
-    end) then
-      room:setPlayerMark(player, "__hidden_general", general)
-      player.general = "hiddenone"
-    end
-    player.gender = Fk.generals[player.general].gender
-    player.kingdom = Fk.generals[player.general].kingdom
-  end
-  room:askForChooseKingdom(players)
-  for _, player in ipairs(players) do
-    room:broadcastProperty(player, "gender")
-    room:broadcastProperty(player, "general")
-    room:broadcastProperty(player, "kingdom")
-  end
-end
 
 
 local role_mode = fk.CreateGameMode{
@@ -51,18 +26,19 @@ local role_mode = fk.CreateGameMode{
 
       local lord_general_num = 3
       local lord_generals = table.connect(room:findGenerals(function(g)
-        return table.find(Fk.generals[g].skills, function(s) return s.lordSkill end)
+        return table.contains(Fk.lords, g)
       end, lord_general_num), room:getNGenerals(generalNum))
-      if #room.general_pile < (#room.players - 1) * generalNum then
+      if #lord_generals < generalNum then
+        room:sendLog{ type = "#NoGeneralDraw", toast = true }
         room:gameOver("")
       end
 
       local lord_general = room:askForGeneral(lord, lord_generals, 1)---@type string
-      table.removeOne(lord_generals, lord_general)
       room:returnToGeneralPile(lord_generals)
       room:findGeneral(lord_general)
 
-      prepareHiddenGeneral({lord}, {lord_general})
+      room:prepareGeneral(lord, lord_general, "", true)
+      room:askForChooseKingdom({lord})
 
       local lord_skills = Fk.generals[lord.general]:getSkillNameList(true)
       for _, sname in ipairs(lord_skills) do
@@ -73,11 +49,12 @@ local role_mode = fk.CreateGameMode{
       end
   
       local nonlord = room:getOtherPlayers(lord, true)
-      local generals = room:getNGenerals(#nonlord * generalNum)
+      local generals = table.random(room.general_pile, #nonlord * generalNum)
       if #generals < #nonlord * generalNum then
+        room:sendLog{ type = "#NoGeneralDraw", toast = true }
         room:gameOver("")
       end
-      table.shuffle(generals)
+
       local req = Request:new(nonlord, "AskForGeneral")
       for i, p in ipairs(nonlord) do
         local arg = table.slice(generals, (i - 1) * generalNum + 1, i * generalNum + 1)
@@ -85,38 +62,16 @@ local role_mode = fk.CreateGameMode{
         req:setDefaultReply(p, table.random(arg, 1))
       end
 
-      req:ask()
-
       local selected = {}
       for _, p in ipairs(nonlord) do
-        local general = req:getResult(p)
-        table.insert(selected, general)
+        local result = req:getResult(p)
+        local general = result[1]
         room:findGeneral(general)
+        room:prepareGeneral(p, general, "")
       end
-      generals = table.filter(generals, function(g) return not table.contains(selected, g) end)
-      room:returnToGeneralPile(generals)
-      prepareHiddenGeneral(nonlord, selected)
 
-    end
+      room:askForChooseKingdom(nonlord)
 
-    function l:broadcastGeneral()
-      local room = self.room
-      local players = room.players
-      for _, p in ipairs(players) do
-        assert(p.general ~= "")
-        local general = Fk.generals[p.general]
-        p.maxHp = p:getGeneralMaxHp()
-        p.hp = general.hp
-        p.shield = math.min(general.shield, 5)
-        -- TODO: setup AI here
-        if p.role == "lord" and p.general ~= "hiddenone" then
-          p.maxHp = p.maxHp + 1
-          p.hp = p.hp + 1
-        end
-        room:broadcastProperty(p, "maxHp")
-        room:broadcastProperty(p, "hp")
-        room:broadcastProperty(p, "shield")
-      end
     end
 
     return l
