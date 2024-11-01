@@ -39,6 +39,8 @@ local role_mode = fk.CreateGameMode{
 
       room:prepareGeneral(lord, lord_general, "", true)
       room:askForChooseKingdom({lord})
+      room:broadcastProperty(lord, "kingdom")
+
 
       local lord_skills = Fk.generals[lord.general]:getSkillNameList(true)
       for _, sname in ipairs(lord_skills) do
