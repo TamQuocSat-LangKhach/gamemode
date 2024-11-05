@@ -127,6 +127,7 @@ local m_2v2_mode = fk.CreateGameMode{
   maxPlayer = 4,
   rule = m_2v2_rule,
   logic = m_2v2_getLogic,
+  main_mode = "2v2_mode",
   surrender_func = function(self, playedTime)
     local surrenderJudge = { { text = "time limitation: 2 min", passed = playedTime >= 120 },
     { text = "2v2: left you alive", passed = table.find(Fk:currentRoom().players, function(p)
