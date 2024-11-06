@@ -52,6 +52,7 @@ GraphicsBox {
         delegate: GeneralCardItem {
           name: modelData
           selectable: !my_selected.includes(index) && !ur_selected.includes(index)
+          chosenInBox : selectedItem.includes(index)
 
           onClicked: {
             if (!selectable || num == 0) return;
