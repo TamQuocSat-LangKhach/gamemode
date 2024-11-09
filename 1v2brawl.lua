@@ -102,7 +102,8 @@ local brawl_getLogic = function()
       })
       req:setDefaultReply(p, table.random(skills, num))
     end
-
+    
+    req.focus_text = "AskForGeneral"
     req:ask()
 
     for _, p in ipairs(players) do
@@ -112,28 +113,6 @@ local brawl_getLogic = function()
       room:setPlayerMark(p, "@brawl_skills", "<font color='burlywood'>" .. table.concat(choice, " ") .. "</font>")
     end
 
-    --[[ 鸽！直接用头像，我写在最前面
-    for _, p in ipairs(players) do
-      local genders = {"male", "female"}
-      local data = json.encode({ genders, genders, "AskForGender", "#ChooseGender" })
-      p.request_data = data
-      p.default_reply = table.random(genders)
-    end
-
-    room:notifyMoveFocus(players, "AskForGender")
-    room:doBroadcastRequest("AskForChoice", players)
-
-    for _, p in ipairs(players) do
-      local genderChosen
-      if p.reply_ready then
-        genderChosen = p.client_reply
-      else
-        genderChosen = p.default_reply
-      end
-      room:setPlayerGeneral(p, genderChosen == "male" and "blank_shibing" or "blank_nvshibing", true, true)
-      p.default_reply = ""
-    end
-    --]]
   end
 
   function brawl_logic:broadcastGeneral()
@@ -170,28 +149,23 @@ end
 
 local brawl_rule = fk.CreateTriggerSkill{
   name = "#brawl_rule",
-  priority = 0.001,
-  refresh_events = {fk.GameStart, fk.Deathed},
-  can_refresh = function(self, event, target, player, data)
-    return event == fk.GameStart and player.role == "lord" or target == player
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.GameStart then
-      room:setTag("SkipNormalDeathProcess", true)
-    else
-      for _, p in ipairs(room.alive_players) do
-        if p.role == "rebel" then
-          local choices = {"m_1v2_draw2", "Cancel"}
-          if p:isWounded() then
-            table.insert(choices, 2, "m_1v2_heal")
-          end
-          local choice = room:askForChoice(p, choices, self.name)
-          if choice == "m_1v2_draw2" then p:drawCards(2, self.name)
-          else room:recover{ who = p, num = 1, skillName = self.name } end
-        end
+
+  ---FIXME: 需要武将和图像分离的机制
+  -- 权宜之计，防止获得禁用武将的技能
+  refresh_events = {fk.EventAcquireSkill},
+  can_refresh = function (self, event, target, player, data)
+    if target == player then
+      local general = Fk.generals[player.general]
+      if general and table.contains(general:getSkillNameList(), data.name) then
+        return not Fk:canUseGeneral(player.general)
       end
     end
+  end,
+  on_refresh = function (self, event, target, player, data)
+    local room = player.room
+    room.logic:getCurrentEvent():addCleaner(function()
+      room:handleAddLoseSkills(player, "-"..data.name, nil)
+    end)
   end,
 }
 Fk:addSkill(brawl_rule)
@@ -212,20 +186,33 @@ local brawl_mode = fk.CreateGameMode{
     end
     return surrenderJudge
   end,
+  reward_punish = function (self, victim, killer)
+    local room = victim.room
+    if victim.role == "rebel" then
+      for _, p in ipairs(room:getOtherPlayers(victim)) do
+        if p.role == "rebel" then
+          local choices = {"m_1v2_draw2", "Cancel"}
+          if p:isWounded() then
+            table.insert(choices, 2, "m_1v2_heal")
+          end
+          local choice = room:askForChoice(p, choices, "PickLegacy")
+          if choice == "m_1v2_draw2" then
+            p:drawCards(2, self.name)
+          else
+            room:recover{ who = p, num = 1, skillName = self.name }
+          end
+        end
+      end
+    end
+  end,
 }
 
 Fk:loadTranslationTable{
   ["brawl_mode"] = "1v2大乱斗",
-  ["#brawl_rule"] = "挑选遗产",
+  ["#brawl_rule"] = "1v2大乱斗",
   ["#brawl-choose"] = "请选择%arg个技能出战",
   ["@brawl_skills"] = "",
-  --[[
-  ["AskForGender"] = "选择性别",
-  ["#ChooseGender"] = "请选择你的性别",
-  ["male"] = "男性",
-  ["female"] = "女性",
-  --]]
-
+  ["PickLegacy"] = "挑选遗产",
   [":brawl_mode"] = desc_brawl,
 
   ["#BrawlInitialNotice"] = "修订：农民抽取技能数为房间“<b>可选武将数</b>”，地主多拿一半（向下取整）",
