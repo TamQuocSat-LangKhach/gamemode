@@ -207,13 +207,12 @@ extension:addCards{
 
 local drowningSkill = fk.CreateActiveSkill{
   name = "drowning_skill",
+  can_use = Util.CanUse,
   target_num = 1,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
     local to = room:getPlayerById(effect.to)
@@ -261,13 +260,12 @@ Fk:loadTranslationTable{
 
 local unexpectationSkill = fk.CreateActiveSkill{
   name = "unexpectation_skill",
+  can_use = Util.CanUse,
   target_num = 1,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.to)
@@ -381,13 +379,12 @@ Fk:loadTranslationTable{
 
 local chasingNearSkill = fk.CreateActiveSkill{
   name = "chasing_near_skill",
+  can_use = Util.CanUse,
   target_num = 1,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isAllNude()
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
     local to = room:getPlayerById(effect.to)

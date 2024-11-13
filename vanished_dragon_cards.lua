@@ -28,15 +28,14 @@ Fk:loadTranslationTable{
 
 local diversionSkill = fk.CreateActiveSkill{
   name = "diversion_skill",
+  can_use = Util.CanUse,
   distance_limit = 1,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     local player = Fk:currentRoom():getPlayerById(to_select)
     local from = Fk:currentRoom():getPlayerById(user)
     return from ~= player and not (distance_limited and not self:withinDistanceLimit(from, false, card, player))
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   target_num = 1,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
@@ -78,12 +77,11 @@ Fk:loadTranslationTable{
 
 local paranoidSkill = fk.CreateActiveSkill{
   name = "paranoid_skill",
+  can_use = Util.CanUse,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return user ~= to_select
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   target_num = 1,
   on_effect = function(self, room, effect)
     local to = room:getPlayerById(effect.to)
@@ -155,10 +153,9 @@ Fk:loadTranslationTable{
 
 local reinforcementSkill = fk.CreateActiveSkill{
   name = "reinforcement_skill",
+  can_use = Util.CanUse,
   mod_target_filter = Util.TrueFunc,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   target_num = 1,
   on_effect = function(self, room, effect)
     local to = room:getPlayerById(effect.to)
@@ -209,12 +206,11 @@ Fk:loadTranslationTable{
 
 local abandoningArmorSkill = fk.CreateActiveSkill{
   name = "abandoning_armor_skill",
+  can_use = Util.CanUse,
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return user ~= to_select and #Fk:currentRoom():getPlayerById(to_select):getCardIds{Player.Equip} > 0
   end,
-  target_filter = function(self, to_select, selected, _, card, extra_data)
-    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
-  end,
+  target_filter = Util.TargetFilter,
   target_num = 1,
   on_effect = function(self, room, effect)
     local to = room:getPlayerById(effect.to)
