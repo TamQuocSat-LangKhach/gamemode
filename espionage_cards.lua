@@ -270,10 +270,8 @@ local scrapePoisonSkill = fk.CreateActiveSkill{
   mod_target_filter = function(self, to_select, selected, user, card)
     return Fk:currentRoom():getPlayerById(to_select):isWounded()
   end,
-  target_filter = function(self, to_select, selected, _, card)
-    if #selected < self:getMaxTargetNum(Self, card) then
-      return self:modTargetFilter(to_select, selected, Self.id, card)
-    end
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -350,8 +348,8 @@ local lootingSkill = fk.CreateActiveSkill{
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
-  target_filter = function(self, to_select)
-    return to_select ~= Self.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

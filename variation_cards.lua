@@ -211,10 +211,8 @@ local drowningSkill = fk.CreateActiveSkill{
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user
   end,
-  target_filter = function (self, to_select, selected, selected_cards, card)
-    if #selected < self:getMaxTargetNum(Self, card) then
-      return self:modTargetFilter(to_select, selected, Self.id, card)
-    end
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
@@ -240,7 +238,6 @@ local drowningSkill = fk.CreateActiveSkill{
           damageType = fk.ThunderDamage,
           skillName = self.name
         })
-
       end
     end
   end
@@ -268,10 +265,8 @@ local unexpectationSkill = fk.CreateActiveSkill{
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
-  target_filter = function(self, to_select, selected, selected_cards, card)
-    if #selected < self:getMaxTargetNum(Self, card) then
-      return self:modTargetFilter(to_select, selected, Self.id, card)
-    end
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -352,9 +347,7 @@ Fk:loadTranslationTable{
 
 local foresightSkill = fk.CreateActiveSkill{
   name = "foresight_skill",
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return true
-  end,
+  mod_target_filter = Util.TrueFunc,
   can_use = function(self, player, card)
     return not player:isProhibited(player, card)
   end,
@@ -392,10 +385,8 @@ local chasingNearSkill = fk.CreateActiveSkill{
   mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
     return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isAllNude()
   end,
-  target_filter = function(self, to_select, selected, selected_cards, card)
-    if #selected < self:getMaxTargetNum(Self, card) then
-      return self:modTargetFilter(to_select, selected, Self.id, card)
-    end
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)

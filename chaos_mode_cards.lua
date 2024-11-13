@@ -81,11 +81,12 @@ Fk:loadTranslationTable{
 local timeFlyingSkill = fk.CreateActiveSkill{
   name = "time_flying_skill",
   target_num = 1,
-  target_filter = function(self, to_select, selected)
-    if #selected < self:getMaxTargetNum(Self) then
-      local player = Fk:currentRoom():getPlayerById(to_select)
-      return Self ~= player 
-    end
+  can_use = Util.CanUse,
+  mod_target_filter = function(self, to_select, selected, user, card)
+    return user ~= to_select
+  end,
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
@@ -132,11 +133,11 @@ Fk:loadTranslationTable{
 local substitutingSkill = fk.CreateActiveSkill{
   name = "substituting_skill",
   target_num = 1,
-  target_filter = function(self, to_select, selected)
-    if #selected < self:getMaxTargetNum(Self) then
-      local player = Fk:currentRoom():getPlayerById(to_select)
-      return Self ~= player 
-    end
+  mod_target_filter = function(self, to_select, selected, user, card)
+    return user ~= to_select
+  end,
+  target_filter = function(self, to_select, selected, _, card, extra_data)
+    return Util.TargetFilter(self, to_select, selected, _, card, extra_data)
   end,
   on_effect = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
