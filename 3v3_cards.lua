@@ -94,10 +94,10 @@ extension:addCards{
 local v33_exNihiloSkill = fk.CreateActiveSkill{
   name = "v33__ex_nihilo_skill",
   prompt = "#v33__ex_nihilo_skill",
-  mod_target_filter = Util.TrueFunc,
   can_use = function(self, player, card)
-    return not player:isProhibited(player, card)
+    return not (player:prohibitUse(card) or player:isProhibited(player, card))
   end,
+  mod_target_filter = Util.TrueFunc,
   on_use = function(self, room, cardUseEvent)
     if not cardUseEvent.tos or #TargetGroup:getRealTargets(cardUseEvent.tos) == 0 then
       cardUseEvent.tos = { { cardUseEvent.from } }
