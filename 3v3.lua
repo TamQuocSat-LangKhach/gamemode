@@ -298,40 +298,6 @@ local m_3v3_getLogic = function()
     end
   end
 
-  -- function m_3v3_logic:prepareDrawPile()
-  --   local room = self.room ---@type Room
-  --   local seed = math.random(2 << 32 - 1)
-  --   local allCardIds = Fk:getAllCardIds()
-
-  --   for i = #allCardIds, 1, -1 do
-  --     local id = allCardIds[i]
-  --     local card = Fk:getCardById(id)
-  --     if card.is_derived or card.name == "lightning" then
-  --       table.removeOne(allCardIds, id)
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --     elseif card.name == "ex_nihilo" then
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --       local newCard = room:printCard("v33__ex_nihilo", card.suit, card.number)
-  --       allCardIds[i] = newCard.id
-  --     elseif card.name == "crossbow" then
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --       local newCard = room:printCard("xbow", card.suit, card.number)
-  --       allCardIds[i] = newCard.id
-  --     end
-  --   end
-
-  --   table.shuffle(allCardIds, seed)
-  --   room.draw_pile = allCardIds
-  --   for _, id in ipairs(room.draw_pile) do
-  --     room:setCardArea(id, Card.DrawPile, nil)
-  --   end
-
-  --   room:doBroadcastNotify("PrepareDrawPile", seed)
-  -- end
-
   function m_3v3_logic:attachSkillToPlayers()
     local room = self.room
     local addRoleModSkills = function(player, skillName)
@@ -559,34 +525,28 @@ local m_3v3_mode = fk.CreateGameMode{
     end
     return {}
   end,
-  prepare_drawpile = function(self, room, seed)
-    local allCardIds = Fk:getAllCardIds()
+  build_draw_pile = function(self)
+    local draw, void = GameMode.buildDrawPile(self)
+    local room = Fk:currentRoom()
 
-    for i = #allCardIds, 1, -1 do
-      local id = allCardIds[i]
+    for i = #draw, 1, -1 do
+      local id = draw[i]
       local card = Fk:getCardById(id)
-      if card.is_derived or card.name == "lightning" then
-        table.removeOne(allCardIds, id)
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
+      if card.name == "lightning" then
+        table.remove(draw, i)
+        table.insert(void, id)
       elseif card.name == "ex_nihilo" then
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
-        local newCard = room:printCard("v33__ex_nihilo", card.suit, card.number)
-        allCardIds[i] = newCard.id
+        table.insert(void, id)
+        local newCard = AbstractRoom.printCard(room, "v33__ex_nihilo", card.suit, card.number)
+        draw[i] = newCard.id
       elseif card.name == "crossbow" then
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
-        local newCard = room:printCard("xbow", card.suit, card.number)
-        allCardIds[i] = newCard.id
+        table.insert(void, id)
+        local newCard = AbstractRoom.printCard(room, "xbow", card.suit, card.number)
+        draw[i] = newCard.id
       end
     end
 
-    table.shuffle(allCardIds, seed)
-    room.draw_pile = allCardIds
-    for _, id in ipairs(room.draw_pile) do
-      room:setCardArea(id, Card.DrawPile, nil)
-    end
+    return draw, void
   end
 }
 

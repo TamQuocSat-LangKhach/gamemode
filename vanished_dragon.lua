@@ -98,32 +98,6 @@ local vanished_dragon_getLogic = function()
     end
   end
 
-  -- function vanished_dragon_logic:prepareDrawPile()
-  --   local room = self.room
-  --   local seed = math.random(2 << 32 - 1)
-  --   local allCardIds = Fk:getAllCardIds()
-  --   local blacklist = {"snatch", "supply_shortage", "ex_nihilo", "amazing_grace", "collateral", "nullification", "lightning", "eight_diagram", "qinggang_sword", "blade"}
-  --   local whitelist = {"diversion", "paranoid", "reinforcement", "abandoning_armor", "crafty_escape", "floating_thunder", "glittery_armor", "seven_stars_sword", "steel_lance"}
-  --   for i = #allCardIds, 1, -1 do
-  --     local card = Fk:getCardById(allCardIds[i])
-  --     local name = card.name
-  --     if (card.is_derived and not table.contains(whitelist, name)) or table.contains(blacklist, name) then
-  --       local id = allCardIds[i]
-  --       table.removeOne(allCardIds, id)
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --     end
-  --   end
-
-  --   table.shuffle(allCardIds, seed)
-  --   room.draw_pile = allCardIds
-  --   for _, id in ipairs(room.draw_pile) do
-  --     room:setCardArea(id, Card.DrawPile, nil)
-  --   end
-
-  --   room:doBroadcastNotify("PrepareDrawPile", seed)
-  -- end
-
   function vanished_dragon_logic:chooseGenerals()
     local room = self.room---@type Room
 
@@ -237,17 +211,17 @@ local vanished_dragon_getLogic = function()
     local room = self.room
     local players = room.players
     local lord = room:getTag("ShownLoyalist")
-  
+
     local addRoleModSkills = function(player, skillName)
       local skill = Fk.skills[skillName]
       if skill.lordSkill then
         return
       end
-  
+
       if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
         return
       end
-  
+
       room:handleAddLoseSkills(player, skillName, nil, false)
     end
     for _, p in ipairs(room.alive_players) do
@@ -258,7 +232,7 @@ local vanished_dragon_getLogic = function()
       for _, sname in ipairs(Fk.generals[p.general].other_skills) do
         addRoleModSkills(p, sname)
       end
-  
+
       local deputy = Fk.generals[p.deputyGeneral]
       if deputy then
         skills = deputy.skills
@@ -338,26 +312,32 @@ local vanished_dragon = fk.CreateGameMode{
       killer:drawCards(3, "kill")
     end
   end,
-  prepare_drawpile = function(self, room, seed)
-    local allCardIds = Fk:getAllCardIds()
+  build_draw_pile = function(self)
+    local draw, void = GameMode.buildDrawPile(self)
     local blacklist = {"snatch", "supply_shortage", "ex_nihilo", "amazing_grace", "collateral", "nullification", "lightning", "eight_diagram", "qinggang_sword", "blade"}
     local whitelist = {"diversion", "paranoid", "reinforcement", "abandoning_armor", "crafty_escape", "floating_thunder", "glittery_armor", "seven_stars_sword", "steel_lance"}
-    for i = #allCardIds, 1, -1 do
-      local card = Fk:getCardById(allCardIds[i])
+
+    for i = #void, 1, -1 do
+      local id = void[i]
+      local card = Fk:getCardById(id)
       local name = card.name
-      if (card.is_derived and not table.contains(whitelist, name)) or table.contains(blacklist, name) then
-        local id = allCardIds[i]
-        table.removeOne(allCardIds, id)
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
+      if table.contains(whitelist, name) then
+        table.remove(void, i)
+        table.insert(draw, id)
       end
     end
 
-    table.shuffle(allCardIds, seed)
-    room.draw_pile = allCardIds
-    for _, id in ipairs(room.draw_pile) do
-      room:setCardArea(id, Card.DrawPile, nil)
+    for i = #draw, 1, -1 do
+      local id = draw[i]
+      local card = Fk:getCardById(id)
+      local name = card.name
+      if table.contains(blacklist, name) then
+        table.remove(draw, i)
+        table.insert(void, id)
+      end
     end
+
+    return draw, void
   end
 }
 

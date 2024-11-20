@@ -11,12 +11,12 @@ import Qt5Compat.GraphicalEffects
 GraphicsBox {
   id: root
 
-  property list<string> generals: []
+  property var generals: []
   property var selectedItem: []
   property int num : 1
   property string prompt : ""
-  property list<int> my_selected: []
-  property list<int> ur_selected: []
+  property var my_selected: []
+  property var ur_selected: []
 
 
   title.text: Util.processPrompt(prompt)

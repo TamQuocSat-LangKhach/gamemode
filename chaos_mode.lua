@@ -76,32 +76,6 @@ local chaos_getLogic = function()
     room.players[1].role = "lord"
   end
 
-  -- function chaos_logic:prepareDrawPile()
-  --   local room = self.room
-  --   local seed = math.random(2 << 32 - 1)
-  --   local allCardIds = Fk:getAllCardIds()
-  --   local blacklist = {"god_salvation", "indulgence", "supply_shortage", "nullification"}
-  --   local whitelist = {"time_flying", "substituting", "replace_with_a_fake", "wenhe_chaos"}
-  --   for i = #allCardIds, 1, -1 do
-  --     local card = Fk:getCardById(allCardIds[i])
-  --     local name = card.name
-  --     if (card.is_derived and not table.contains(whitelist, name)) or table.contains(blacklist, name) then
-  --       local id = allCardIds[i]
-  --       table.removeOne(allCardIds, id)
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --     end
-  --   end
-
-  --   table.shuffle(allCardIds, seed)
-  --   room.draw_pile = allCardIds
-  --   for _, id in ipairs(room.draw_pile) do
-  --     room:setCardArea(id, Card.DrawPile, nil)
-  --   end
-
-  --   room:doBroadcastNotify("PrepareDrawPile", seed)
-  -- end
-
   function chaos_logic:chooseGenerals()
     local room = self.room
     local generalNum = room.settings.generalNum
@@ -369,26 +343,32 @@ local chaos_mode = fk.CreateGameMode{
     alive[1].role = "renegade" --生草
     return "renegade"
   end,
-  prepare_drawpile = function(self, room, seed)
-    local allCardIds = Fk:getAllCardIds()
+  build_draw_pile = function(self)
+    local draw, void = GameMode.buildDrawPile(self)
     local blacklist = {"god_salvation", "indulgence", "supply_shortage", "nullification"}
     local whitelist = {"time_flying", "substituting", "replace_with_a_fake", "wenhe_chaos"}
-    for i = #allCardIds, 1, -1 do
-      local card = Fk:getCardById(allCardIds[i])
+
+    for i = #void, 1, -1 do
+      local id = void[i]
+      local card = Fk:getCardById(id)
       local name = card.name
-      if (card.is_derived and not table.contains(whitelist, name)) or table.contains(blacklist, name) then
-        local id = allCardIds[i]
-        table.removeOne(allCardIds, id)
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
+      if table.contains(whitelist, name) then
+        table.remove(void, i)
+        table.insert(draw, id)
       end
     end
 
-    table.shuffle(allCardIds, seed)
-    room.draw_pile = allCardIds
-    for _, id in ipairs(room.draw_pile) do
-      room:setCardArea(id, Card.DrawPile, nil)
+    for i = #draw, 1, -1 do
+      local id = draw[i]
+      local card = Fk:getCardById(id)
+      local name = card.name
+      if table.contains(blacklist, name) then
+        table.remove(draw, i)
+        table.insert(void, id)
+      end
     end
+
+    return draw, void
   end
 }
 

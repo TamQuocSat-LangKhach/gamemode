@@ -37,35 +37,6 @@ end
 local m_1v1_getLogic = function()
   local m_1v1_logic = GameLogic:subclass("m_1v1_logic")
 
-  -- function m_1v1_logic:prepareDrawPile()
-  --   local room = self.room ---@type Room
-  --   local seed = math.random(2 << 32 - 1)
-  --   local allCardIds = Fk:getAllCardIds()
-
-  --   for i = #allCardIds, 1, -1 do
-  --     local id = allCardIds[i]
-  --     local card = Fk:getCardById(id)
-  --     if card.is_derived then
-  --       table.removeOne(allCardIds, id)
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --     elseif card.name == "dismantlement" then
-  --       table.insert(room.void, id)
-  --       room:setCardArea(id, Card.Void, nil)
-  --       local newCard = room:printCard("v11__dismantlement", card.suit, card.number)
-  --       allCardIds[i] = newCard.id
-  --     end
-  --   end
-
-  --   table.shuffle(allCardIds, seed)
-  --   room.draw_pile = allCardIds
-  --   for _, id in ipairs(room.draw_pile) do
-  --     room:setCardArea(id, Card.DrawPile, nil)
-  --   end
-
-  --   room:doBroadcastNotify("PrepareDrawPile", seed)
-  -- end
-
   function m_1v1_logic:chooseGenerals()
     local room = self.room ---@type Room
 
@@ -290,29 +261,22 @@ local m_1v1_mode = fk.CreateGameMode{
   surrender_func = function(self, playedTime)
     return { { text = "time limitation: 2 min", passed = playedTime >= 120 } }
   end,
-  prepare_drawpile = function(self, room, seed)
-    local allCardIds = Fk:getAllCardIds()
+  build_draw_pile = function(self)
+    local draw_pile, void = GameMode.buildDrawPile(self)
+    local room = Fk:currentRoom()
 
-    for i = #allCardIds, 1, -1 do
-      local id = allCardIds[i]
+    for i = #draw_pile, 1, -1 do
+      local id = draw_pile[i]
       local card = Fk:getCardById(id)
-      if card.is_derived then
-        table.removeOne(allCardIds, id)
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
-      elseif card.name == "dismantlement" then
-        table.insert(room.void, id)
-        room:setCardArea(id, Card.Void, nil)
-        local newCard = room:printCard("v11__dismantlement", card.suit, card.number)
-        allCardIds[i] = newCard.id
+      if card.name == "dismantlement" then
+        table.insert(void, id)
+        -- 因为是双端都要进行一次印卡，所以不要用Room的方法
+        local newCard = AbstractRoom.printCard(room, "v11__dismantlement", card.suit, card.number)
+        draw_pile[i] = newCard.id
       end
     end
 
-    table.shuffle(allCardIds, seed)
-    room.draw_pile = allCardIds
-    for _, id in ipairs(room.draw_pile) do
-      room:setCardArea(id, Card.DrawPile, nil)
-    end
+    return draw_pile, void
   end
 }
 -- extension:addGameMode(m_1v1_mode)
