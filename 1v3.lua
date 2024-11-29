@@ -172,13 +172,13 @@ local m_1v3_getLogic = function()
     -- 行动顺序：反1->主->反2->主->反3->主，若已暴怒则正常逻辑
     if not room:getTag("m_1v3_phase2") then
       local p1 = room:getLord()
-      room:setCurrent(p1 -- getOtherPlayers)
+      room:setCurrent(p1) -- getOtherPlayers
       for _, p in ipairs(room:getOtherPlayers(p1, true, true)) do
         room:setCurrent(p)
         GameEvent.Turn:create(p):exec()
         if room.game_finished then break end
         if not p.dead then
-          room:setCurrent(p1)
+          room.current = p1
           GameEvent.Turn:create(p1):exec()
           if room.game_finished then break end
         end
@@ -292,7 +292,7 @@ local m_1v3_rule = fk.CreateTriggerSkill{
         player:turnOver()
       end
       if round then
-        room:setCurrent(player)
+        room.current = player
         round:shutdown()
       end
     end
