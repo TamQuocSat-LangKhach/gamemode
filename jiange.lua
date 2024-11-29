@@ -140,7 +140,7 @@ local jiange_getLogic = function()
       room:setPlayerProperty(p, "role_shown", true)
       room:broadcastProperty(p, "role")
     end
-    room.current = room.players[1]
+    room:setCurrent(room.players[1])
   end
 
   function jiange_logic:chooseGenerals()

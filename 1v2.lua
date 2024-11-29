@@ -37,7 +37,7 @@ local m_1v2_getLogic = function()
     end
 
     local lord = room:getLord()
-    room.current = lord
+    room:setCurrent(lord)
     local players = room.players
     -- 地主多发俩武将
     local generals = room:getNGenerals(#players * generalNum + 2)

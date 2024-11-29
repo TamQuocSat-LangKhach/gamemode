@@ -41,7 +41,7 @@ local m_1v1_getLogic = function()
     local room = self.room ---@type Room
 
     local lord = room.players[1]
-    room.current = lord
+    room:setCurrent(lord)
     local nonlord = room.players[2]
 
     room:setPlayerProperty(nonlord, "role_shown", true)

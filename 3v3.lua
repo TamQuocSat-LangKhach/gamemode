@@ -164,7 +164,7 @@ local m_3v3_getLogic = function()
       room:setPlayerProperty(p, "role_shown", true)
       room:broadcastProperty(p, "role")
     end
-    room.current = room.players[1]
+    room:setCurrent(room.players[1])
   end
 
   function m_3v3_logic:chooseGenerals()
@@ -173,7 +173,7 @@ local m_3v3_getLogic = function()
 
     local cool_marshal = room.players[2]
     local warm_marshal = room.players[5]
-    room.current = cool_marshal
+    room:setCurrent(cool_marshal)
 
     local general_pool = {
       --2023
@@ -350,7 +350,7 @@ local m_3v3_getLogic = function()
         else
           to = friends[1]
         end
-        room.current = to
+        room:setCurrent(to)
         room:setPlayerMark(to, "@!action-round", 1)
         GameEvent.Turn:create(to):exec()
         while to ~= marshal do
@@ -362,12 +362,12 @@ local m_3v3_getLogic = function()
             if #vanguards > 1 then
               to = room:askForChoosePlayers(marshal, table.map(vanguards, Util.IdMapper), 1, 1,
                 "#m_3v3_action", "m_3v3_gamerule", false)
-              room.current = to
+              room:setCurrent(to)
               room:setPlayerMark(to, "@!action-round", 1)
               GameEvent.Turn:create(to):exec()
             else
               to = vanguards[1]
-              room.current = to
+              room:setCurrent(to)
               room:setPlayerMark(to, "@!action-round", 1)
               GameEvent.Turn:create(to):exec()
             end

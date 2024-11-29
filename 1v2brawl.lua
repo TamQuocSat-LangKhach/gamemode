@@ -50,7 +50,7 @@ local brawl_getLogic = function()
     end
 
     local lord = room:getLord()
-    room.current = lord
+    room:setCurrent(lord)
     local players = room.players
     local skill_num = room.settings.generalNum -- 技能池数量由选将数决定，农民等于，地主1.5倍（向下取整）
     local total = math.floor(skill_num * 3.5)

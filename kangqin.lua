@@ -48,7 +48,7 @@ local kangqin_getLogic = function()
     local generalNum = room.settings.generalNum
     local n = room.settings.enableDeputy and 2 or 1
     local lord = room:getLord()
-    room.current = lord
+    room:setCurrent(lord)
     -- 询问选将
     local lords, soldiers = table.random(qin_generals, math.max(2, generalNum//3) ), table.simpleClone(qin_soldiers)
     local others = room:getNGenerals( 2* generalNum )

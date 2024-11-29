@@ -22,7 +22,7 @@ local role_mode = fk.CreateGameMode{
         temp.role = "lord"
         lord =  temp
       end
-      room.current = lord
+      room:setCurrent(lord)
 
       local lord_general_num = 3
       local lord_generals = table.connect(room:findGenerals(function(g)

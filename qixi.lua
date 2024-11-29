@@ -506,7 +506,7 @@ local qixi_get_logic = function()
 
     local n = room.settings.enableDeputy and 2 or 1
     local lord = room:getLord()
-    room.current = lord
+    room:setCurrent(lord)
     lord.role = "hidden"
 
     for _, p in ipairs(nonlord) do

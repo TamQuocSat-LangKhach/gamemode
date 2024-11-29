@@ -45,7 +45,7 @@ local m_2v2_getLogic = function()
     local generalNum = math.min(room.settings.generalNum, 9)
 
     local lord = room:getLord()
-    room.current = lord
+    room:setCurrent(lord)
     lord.role = self.start_role
     for _, p in ipairs(room.players) do
       room:setPlayerProperty(p, "role_shown", true)
