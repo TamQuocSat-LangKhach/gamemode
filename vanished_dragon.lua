@@ -71,9 +71,9 @@ local vanished_dragon_getLogic = function()
   function vanished_dragon_logic:initialize(room)
     GameLogic.initialize(self, room)
     self.role_table = {nil, nil, nil, nil, nil, 
-    {"hidden", "loyalist", "rebel", "rebel", "rebel", "renegade"},
-    {"hidden", "loyalist", "loyalist", "rebel", "rebel", "rebel", "renegade"}, 
-    {"hidden", "loyalist", "loyalist", "rebel", "rebel", "rebel", "rebel", "renegade"} }
+    {"lord", "loyalist", "rebel", "rebel", "rebel", "renegade"},
+    {"lord", "loyalist", "loyalist", "rebel", "rebel", "rebel", "renegade"}, 
+    {"lord", "loyalist", "loyalist", "rebel", "rebel", "rebel", "rebel", "renegade"} }
   end
 
   function vanished_dragon_logic:assignRoles()
@@ -91,7 +91,7 @@ local vanished_dragon_getLogic = function()
         room:setPlayerProperty(p, "role_shown", true)
         room:broadcastProperty(p, "role")
         room:setTag("ShownLoyalist", p.id)
-        p.role = "lord" -- for adjustSeats
+        -- p.role = "lord" -- for adjustSeats
       else
         room:broadcastProperty(p, "role")
       end
@@ -118,15 +118,23 @@ local vanished_dragon_getLogic = function()
 
     local generalNum = room.settings.generalNum
     local n = room.settings.enableDeputy and 2 or 1
-    local lord = room:getLord()
-    room:setCurrent(lord)
-    lord.role = "loyalist"
-    for _, p in ipairs(room.players) do
-      if p.role == "hidden" then
-        p.role = "lord"
-        room:broadcastProperty(p, "role")
+    local lord = room.players[1] -- room:getLord()
+    if lord.role ~= "loyalist" then
+      for _, p in ipairs(room.players) do
+        if p.role == "loyalist" then
+          lord = p
+          break
+        end
       end
     end
+    room:setCurrent(lord)
+    -- lord.role = "loyalist"
+    -- for _, p in ipairs(room.players) do
+    --   if p.role == "hidden" then
+    --     p.role = "lord"
+    --     room:broadcastProperty(p, "role")
+    --   end
+    -- end
 
     room:sendLog{type = "#VDIntro", arg = lord._splayer:getScreenName(), toast = true}
 
@@ -270,7 +278,7 @@ local vanished_dragon_rule = fk.CreateTriggerSkill{
     local lord = room:getLord()
     if not lord then return end
     room:setPlayerProperty(lord, "role_shown", true)
-    room:broadcastProperty(lord, "role")
+    -- room:broadcastProperty(lord, "role")
     room:sendLog{type = "#VDLordExploded", from = lord.id, toast = true}
 
     local skills = Fk.generals[lord.general]:getSkillNameList(true)
