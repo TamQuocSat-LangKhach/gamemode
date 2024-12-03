@@ -124,7 +124,7 @@ local vanished_dragon_getLogic = function()
     for _, p in ipairs(room.players) do
       if p.role == "hidden" then
         p.role = "lord"
-        room:notifyProperty(p, p, "role")
+        room:broadcastProperty(p, "role")
       end
     end
 
