@@ -159,6 +159,7 @@ local function drawInit(room, player, n)
   room:notifyMoveCards(nil, {move_to_notify})
 
   for _, id in ipairs(cardIds) do
+    table.removeOne(room.draw_pile, id)
     room:setCardArea(id, Card.PlayerHand, player.id)
   end
 end
