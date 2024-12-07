@@ -87,15 +87,33 @@ local vanished_dragon_getLogic = function()
     for i = 1, n do
       local p = players[i]
       p.role = roles[i]
+      room:broadcastProperty(p, "role")
       if p.role == "loyalist" and not room:getTag("ShownLoyalist") then
         room:setPlayerProperty(p, "role_shown", true)
-        room:broadcastProperty(p, "role")
         room:setTag("ShownLoyalist", p.id)
-        -- p.role = "lord" -- for adjustSeats
-      else
-        room:broadcastProperty(p, "role")
       end
     end
+  end
+
+  function vanished_dragon_logic:adjustSeats()
+    local player_circle = {}
+    local players = self.room.players
+    local p = 1
+  
+    for i = 1, #players do
+      if players[i].id == self.room:getTag("ShownLoyalist") then
+        p = i
+        break
+      end
+    end
+    for j = p, #players do
+      table.insert(player_circle, players[j])
+    end
+    for j = 1, p - 1 do
+      table.insert(player_circle, players[j])
+    end
+  
+    self.room:arrangeSeats(player_circle)
   end
 
   function vanished_dragon_logic:chooseGenerals()
@@ -128,13 +146,6 @@ local vanished_dragon_getLogic = function()
       end
     end
     room:setCurrent(lord)
-    -- lord.role = "loyalist"
-    -- for _, p in ipairs(room.players) do
-    --   if p.role == "hidden" then
-    --     p.role = "lord"
-    --     room:broadcastProperty(p, "role")
-    --   end
-    -- end
 
     room:sendLog{type = "#VDIntro", arg = lord._splayer:getScreenName(), toast = true}
 
