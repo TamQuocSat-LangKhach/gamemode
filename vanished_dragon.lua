@@ -137,9 +137,9 @@ local vanished_dragon_getLogic = function()
     local generalNum = room.settings.generalNum
     local n = room.settings.enableDeputy and 2 or 1
     local lord = room.players[1] -- room:getLord()
-    if lord.role ~= "loyalist" then
+    if lord.role ~= "loyalist" or not lord.role_shown then
       for _, p in ipairs(room.players) do
-        if p.role == "loyalist" then
+        if p.role == "loyalist" and p.role_shown then
           lord = p
           break
         end
