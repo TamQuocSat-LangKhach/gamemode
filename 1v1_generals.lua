@@ -108,9 +108,6 @@ local guanyu = General(extension, "v11__guanyu", "shu", 4)
 local huwei = fk.CreateTriggerSkill{
   name = "v11__huwei",
   events = {"fk.Debut"},
-  can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and target == player
-  end,
   on_use = function(self, event, target, player, data)
     player.room:useVirtualCard("drowning", nil, player, player.next, self.name)
   end,
