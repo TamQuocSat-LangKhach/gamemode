@@ -225,10 +225,7 @@ local botu = fk.CreateTriggerSkill{
     and data.card.suit ~= Card.NoSuit and #player:getTableMark("@v11__botu-turn") < 4
   end,
   on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    local mark = player:getTableMark("@v11__botu-turn")
-    table.insertIfNeed(mark, data.card:getSuitString(true))
-    room:setPlayerMark(player, "@v11__botu-turn", mark)
+    player.room:addTableMarkIfNeed(player, "@v11__botu-turn", data.card:getSuitString(true))
   end,
 }
 lvmeng:addSkill(botu)
