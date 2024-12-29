@@ -41,7 +41,10 @@ local diversionSkill = fk.CreateActiveSkill{
     local from = room:getPlayerById(effect.from)
     local to = room:getPlayerById(effect.to)
     if to.dead or from:isKongcheng() then return end
-    local plist, cid = room:askForChooseCardAndPlayers(from, table.map(room:getOtherPlayers(to), Util.IdMapper), 1, 1, ".|.|.|hand", "#diversion-give::" .. to.id, self.name, false)
+    local others = room:getOtherPlayers(to, false)
+    table.removeOne(others, from)
+    if #others == 0 then return end
+    local plist, cid = room:askForChooseCardAndPlayers(from, table.map(others, Util.IdMapper), 1, 1, ".|.|.|hand", "#diversion-give::" .. to.id, self.name, false)
     room:moveCardTo(cid, Player.Hand, to, fk.ReasonGive, self.name, nil, false, from.id)
     local target = plist[1]
     local card
@@ -68,7 +71,7 @@ extension:addCards{
 }
 Fk:loadTranslationTable{
   ["diversion"] = "声东击西",
-  [":diversion"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：距离为1的一名角色<br /><b>效果</b>：你交给目标角色一张手牌并选择一名除其以外的角色，目标角色将两张牌交给该角色。",
+  [":diversion"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：距离为1的一名角色<br /><b>效果</b>：你交给目标角色一张手牌并选择另一名其他角色，目标角色将两张牌交给该角色。",
 
   ["diversion_skill"] = "声东击西",
   ["#diversion-give"] = "声东击西：交给 %dest 一张手牌，并选择其要将两张牌交给的目标",
