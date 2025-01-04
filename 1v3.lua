@@ -198,6 +198,8 @@ local m_1v3_getLogic = function()
     while true do
       hulaoRound:create():exec()
       if room.game_finished then break end
+      if table.every(room.players, function(p) return p.dead and p.rest == 0 end) then room:gameOver("") end
+      room:setCurrent(room.players[1])
     end
   end
 
