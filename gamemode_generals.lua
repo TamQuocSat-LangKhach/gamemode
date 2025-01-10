@@ -371,10 +371,10 @@ local nos__xuanbei = fk.CreateTriggerSkill{
     if event == fk.GameStart then
       return true
     elseif event == fk.CardUseFinished then
-      local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function(p)
-        return p.id end), 1, 1, "#nos__xuanbei-give:::"..data.card:toLogString(), self.name, true)
+      local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player, false), Util.IdMapper),
+        1, 1, "#nos__xuanbei-give:::"..data.card:toLogString(), self.name, true)
       if #to > 0 then
-        self.cost_data = to[1]
+        self.cost_data = {tos = to}
         return true
       end
     end
@@ -392,7 +392,7 @@ local nos__xuanbei = fk.CreateTriggerSkill{
         room:moveCardTo(table.random(cards, 2), Card.PlayerHand, player, fk.ReasonJustMove, self.name, nil, false, player.id)
       end
     elseif event == fk.CardUseFinished then
-      room:moveCardTo(data.card, Card.PlayerHand, room:getPlayerById(self.cost_data), fk.ReasonGive, self.name, nil, true, player.id)
+      room:moveCardTo(data.card, Card.PlayerHand, room:getPlayerById(self.cost_data.tos[1]), fk.ReasonGive, self.name, nil, true, player.id)
     end
   end,
 }

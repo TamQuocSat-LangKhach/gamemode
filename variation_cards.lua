@@ -746,7 +746,7 @@ local variation_rule = fk.CreateTriggerSkill{
       if event == fk.AfterCardUseDeclared then
         if data.extra_data and data.extra_data.variation then return end
         if data.card:getMark("@fujia") ~= 0 then
-          return table.every(player.room:getOtherPlayers(player), function(p)
+          return table.every(player.room:getOtherPlayers(player, false), function(p)
             return player:getHandcardNum() >= p:getHandcardNum()
           end)
         elseif data.card:getMark("@kongchao") ~= 0 then
@@ -754,7 +754,7 @@ local variation_rule = fk.CreateTriggerSkill{
         elseif data.card:getMark("@canqu") ~= 0 then
           return player.hp == 1
         elseif data.card:getMark("@zhuzhan") ~= 0 then
-          return table.find(player.room:getOtherPlayers(player), function(p) return not p:isKongcheng() end)
+          return table.find(player.room:getOtherPlayers(player, false), function(p) return not p:isKongcheng() end)
         end
       elseif event == fk.AfterCardTargetDeclared then
         if data.extra_data and data.extra_data.variation then
@@ -776,7 +776,7 @@ local variation_rule = fk.CreateTriggerSkill{
     if event == fk.AfterCardUseDeclared then
       if data.card:getMark("@zhuzhan") ~= 0 then
         local room = player.room
-        local players = table.filter(room:getOtherPlayers(player), function (p)
+        local players = table.filter(room:getOtherPlayers(player, false), function (p)
           return not p:isKongcheng() and not table.contains(TargetGroup:getRealTargets(data.tos), p.id)
         end)
         if #players == 0 then return end

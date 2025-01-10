@@ -102,7 +102,7 @@ local brawl_getLogic = function()
       })
       req:setDefaultReply(p, table.random(skills, num))
     end
-    
+
     req.focus_text = "AskForGeneral"
     req:ask()
 

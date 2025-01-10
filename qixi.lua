@@ -624,7 +624,7 @@ local qixi_rule = fk.CreateTriggerSkill{
         rewardAndPunish(killer, player);
       end
     elseif event == fk.DamageCaused then
-      if table.find(room:getOtherPlayers(player), function(p)
+      if table.find(room:getOtherPlayers(player, false), function(p)
         return canPayCourtTo(player, p)
       end) then
         room:sendLog{type = "#QixiModeNegative", from = player.id, toast = true }

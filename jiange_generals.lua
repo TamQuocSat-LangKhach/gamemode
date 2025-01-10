@@ -1334,7 +1334,7 @@ local jiange__mojian = fk.CreateTriggerSkill{
   on_use = function (self, event, target, player, data)
     local room = player.room
     local tos = {}
-    for _, p in ipairs(room:getOtherPlayers(player)) do
+    for _, p in ipairs(room:getOtherPlayers(player, false)) do
       if table.contains(U.GetEnemies(room, player), p) and not player:isProhibited(p, Fk:cloneCard("archery_attack")) then
         table.insert(tos, p)
       end
