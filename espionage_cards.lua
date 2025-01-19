@@ -268,7 +268,7 @@ local scrapePoisonSkill = fk.CreateActiveSkill{
   name = "scrape_poison_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card)
+  mod_target_filter = function(self, to_select, selected, player, card)
     return Fk:currentRoom():getPlayerById(to_select):isWounded()
   end,
   target_filter = Util.TargetFilter,
@@ -345,8 +345,8 @@ local lootingSkill = fk.CreateActiveSkill{
   name = "looting_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
@@ -617,8 +617,8 @@ local carrierPigeonSkill = fk.CreateActiveSkill{
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:currentRoom():getCardArea(to_select) == Player.Hand
   end,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and to_select ~= Self.id
+  target_filter = function(self, to_select, selected, selected_cards, _, _, player)
+    return #selected == 0 and to_select ~= player.id
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -654,8 +654,8 @@ local present_skill = fk.CreateActiveSkill{
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select):getMark("@@present") > 0 and table.contains(Self:getCardIds("h"), to_select)
   end,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and to_select ~= Self.id
+  target_filter = function(self, to_select, selected, selected_cards, _, _, player)
+    return #selected == 0 and to_select ~= player.id
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

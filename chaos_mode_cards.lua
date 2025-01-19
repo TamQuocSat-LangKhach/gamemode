@@ -82,8 +82,8 @@ local timeFlyingSkill = fk.CreateActiveSkill{
   name = "time_flying_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card)
-    return user ~= to_select
+  mod_target_filter = function(self, to_select, selected, player, card)
+    return to_select ~= player.id
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
@@ -132,8 +132,8 @@ local substitutingSkill = fk.CreateActiveSkill{
   name = "substituting_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card)
-    return user ~= to_select
+  mod_target_filter = function(self, to_select, selected, player, card)
+    return to_select ~= player.id
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)

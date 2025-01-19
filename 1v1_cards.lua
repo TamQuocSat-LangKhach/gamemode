@@ -65,9 +65,9 @@ local dismantlementSkill = fk.CreateActiveSkill{
   prompt = "#v11__dismantlement_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card)
+  mod_target_filter = function(self, to_select, selected, player, card)
     local to = Fk:currentRoom():getPlayerById(to_select)
-    return user ~= to_select and not to:isNude()
+    return to_select ~= player.id and not to:isNude()
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)

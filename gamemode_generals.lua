@@ -278,8 +278,17 @@ local vd__fenyue = fk.CreateActiveSkill{
   anim_type = "offensive",
   card_num = 0,
   target_num = 1,
+  times = function(self)
+    return Self.phase == Player.Play and
+    #table.filter(Fk:currentRoom().alive_players, function (p)
+      return p.role == "loyalist"
+    end) - Self:usedSkillTimes(self.name, Player.HistoryPhase) or -1
+  end,
   can_use = function(self, player)
-    return not player:isKongcheng() and player:usedSkillTimes(self.name, Player.HistoryPhase) < player:getMark(self.name)
+    return player:usedSkillTimes(self.name, Player.HistoryPhase) <
+      #table.filter(Fk:currentRoom().alive_players, function (p)
+        return p.role == "loyalist"
+      end)
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected)
@@ -300,21 +309,6 @@ local vd__fenyue = fk.CreateActiveSkill{
     end
   end,
 }
-local vd__fenyue_record = fk.CreateTriggerSkill{
-  name = "#vd__fenyue_record",
-  refresh_events = {fk.GameStart, fk.BeforeGameOverJudge, fk.EventAcquireSkill},
-  can_refresh = function(self, event, target, player, data)
-    if event == fk.EventAcquireSkill then
-      return target == player and data == self and player.room:getTag("RoundCount")
-    end
-    return player:hasSkill(vd__fenyue, true)
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    room:setPlayerMark(player, "vd__fenyue", #table.filter(room.alive_players, function(p) return p.role == "loyalist" end))
-  end,
-}
-vd__fenyue:addRelatedSkill(vd__fenyue_record)
 local vd__fenyue_prohibit = fk.CreateProhibitSkill{
   name = "#vd__fenyue_prohibit",
   prohibit_use = function(self, player, card)

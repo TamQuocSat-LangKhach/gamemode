@@ -30,10 +30,9 @@ local diversionSkill = fk.CreateActiveSkill{
   name = "diversion_skill",
   can_use = Util.CanUse,
   distance_limit = 1,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    local player = Fk:currentRoom():getPlayerById(to_select)
-    local from = Fk:currentRoom():getPlayerById(user)
-    return from ~= player and not (distance_limited and not self:withinDistanceLimit(from, false, card, player))
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    local target = Fk:currentRoom():getPlayerById(to_select)
+    return target ~= player and not (distance_limited and not self:withinDistanceLimit(player, false, card, target))
   end,
   target_filter = Util.TargetFilter,
   target_num = 1,
@@ -81,8 +80,8 @@ Fk:loadTranslationTable{
 local paranoidSkill = fk.CreateActiveSkill{
   name = "paranoid_skill",
   can_use = Util.CanUse,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return user ~= to_select
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id
   end,
   target_filter = Util.TargetFilter,
   target_num = 1,
@@ -210,8 +209,8 @@ Fk:loadTranslationTable{
 local abandoningArmorSkill = fk.CreateActiveSkill{
   name = "abandoning_armor_skill",
   can_use = Util.CanUse,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return user ~= to_select and #Fk:currentRoom():getPlayerById(to_select):getCardIds{Player.Equip} > 0
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id and #Fk:currentRoom():getPlayerById(to_select):getCardIds{Player.Equip} > 0
   end,
   target_filter = Util.TargetFilter,
   target_num = 1,
@@ -375,11 +374,9 @@ Fk:loadTranslationTable{
 
 local floatingThunderSkill = fk.CreateActiveSkill{
   name = "floating_thunder_skill",
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return true
-  end,
+  mod_target_filter = Util.TrueFunc,
   can_use = function(self, player, card)
-    return not player:isProhibited(player, card)
+    return Util.SelfCanUse(self, player, card)
   end,
   on_use = function(self, room, use)
     if not use.tos or #TargetGroup:getRealTargets(use.tos) == 0 then

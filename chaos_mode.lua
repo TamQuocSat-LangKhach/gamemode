@@ -133,9 +133,9 @@ local chaos_rule = fk.CreateTriggerSkill{
     elseif event == fk.DamageInflicted then
       return num == "sweeping_all"
     elseif event == fk.RoundEnd then
-      return num == "starvation" or room:getTag("RoundCount") == 1
+      return num == "starvation" or room:getBanner("RoundCount") == 1
     elseif event == fk.HpChanged or event == fk.MaxHpChanged then
-      return room:getTag("RoundCount") == 1
+      return room:getBanner("RoundCount") == 1
     end
     return true
   end,
@@ -169,7 +169,7 @@ local chaos_rule = fk.CreateTriggerSkill{
       end
     elseif event == fk.RoundStart then
       local index = math.random(1, 7)
-      if room:getTag("RoundCount") == 1 then
+      if room:getBanner("RoundCount") == 1 then
         room:doBroadcastNotify("ShowToast", Fk:translate("chaos_fisrt_round"))
         index = 1
       end
@@ -276,7 +276,7 @@ local chaos_rule = fk.CreateTriggerSkill{
     elseif event == fk.DamageInflicted then
       data.damage = data.damage + 1
     elseif event == fk.RoundEnd then
-      if room:getTag("RoundCount") == 1 then
+      if room:getBanner("RoundCount") == 1 then
         for _, p in ipairs(room.alive_players) do
           if p:getMark("_chaos_mode_bazhen") > 0 then
             room:handleAddLoseSkills(p, "-bazhen", nil, false, false)
@@ -295,7 +295,7 @@ local chaos_rule = fk.CreateTriggerSkill{
           end
         end
         room:sortPlayersByAction(targets)
-        num = room:getTag("RoundCount")
+        num = room:getBanner("RoundCount")
         for _, pid in ipairs(targets) do
           local p = room:getPlayerById(pid)
           if not p.dead then

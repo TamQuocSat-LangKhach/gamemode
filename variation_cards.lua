@@ -209,8 +209,8 @@ local drowningSkill = fk.CreateActiveSkill{
   name = "drowning_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return to_select ~= user
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
@@ -262,8 +262,8 @@ local unexpectationSkill = fk.CreateActiveSkill{
   name = "unexpectation_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)
@@ -347,7 +347,7 @@ local foresightSkill = fk.CreateActiveSkill{
   name = "foresight_skill",
   mod_target_filter = Util.TrueFunc,
   can_use = function(self, player, card)
-    return not player:isProhibited(player, card)
+    return Util.SelfCanUse(self, player, card)
   end,
   on_use = function(self, room, cardUseEvent)
     if not cardUseEvent.tos or #TargetGroup:getRealTargets(cardUseEvent.tos) == 0 then
@@ -381,8 +381,8 @@ local chasingNearSkill = fk.CreateActiveSkill{
   name = "chasing_near_skill",
   can_use = Util.CanUse,
   target_num = 1,
-  mod_target_filter = function(self, to_select, selected, user, card, distance_limited)
-    return to_select ~= user and not Fk:currentRoom():getPlayerById(to_select):isAllNude()
+  mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
+    return to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isAllNude()
   end,
   target_filter = Util.TargetFilter,
   on_effect = function(self, room, effect)

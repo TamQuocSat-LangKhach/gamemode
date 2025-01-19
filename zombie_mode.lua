@@ -137,7 +137,7 @@ local zombie_rule = fk.CreateTriggerSkill{
     if event == fk.GameStart then
       room:setTag("SkipNormalDeathProcess", true)
     elseif event == fk.RoundStart then
-      local count = room:getTag("RoundCount")
+      local count = room:getBanner("RoundCount")
       if count == 2 then
         local loyalist = table.filter(room.alive_players, function(p) return p.role == "loyalist" end)
         local zombie = table.random(loyalist, 2)
