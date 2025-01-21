@@ -1214,10 +1214,10 @@ local jiange__yingji = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0 and not player:isKongcheng()
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected)
+  target_filter = function (self, to_select, selected, _, _, extra_data, player)
     local card = Fk:cloneCard("slash")
     card.skillName = self.name
-    return card.skill:targetFilter(to_select, selected, {}, card, {bypass_times = true})
+    return card.skill:targetFilter(to_select, selected, {}, card, {bypass_times = true}, player)
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

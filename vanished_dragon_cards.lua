@@ -335,9 +335,7 @@ local craftyEscapeTrigger = fk.CreateTriggerSkill{
 Fk:addSkill(craftyEscapeTrigger)
 local craftyEscapeSkill = fk.CreateActiveSkill{
   name = "crafty_escape_skill",
-  can_use = function()
-    return false
-  end,
+  can_use = Util.FalseFunc,
   on_effect = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     if effect.responseToEvent then
