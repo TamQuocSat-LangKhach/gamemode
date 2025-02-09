@@ -30,7 +30,8 @@ local desc_brawl = [[
 
 local ban_skills = {
   "fenyong", "danggu", -- 弱智技能
-  "duorui", "quanfeng", "zhongliu", "yongdi", "chuanwu", "tuogu", "zeyue", "n_dianlun", "xiaode" -- 和武将牌上的技能有关的
+  "duorui", "quanfeng", "zhongliu", "yongdi", "chuanwu", "tuogu", "zeyue", "n_dianlun", "xiaode",
+  "mou__xingshang", "os_mou__xingshang", "tongdao" -- 和武将牌上的技能有关的
 }
 
 local brawl_getLogic = function()
