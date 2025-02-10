@@ -3,7 +3,7 @@ local desc_2v2 = [[
 
   游戏由两名忠臣和两名反贼进行，胜利目标为击杀所有敌人。
 
-  座位排列可能是忠-反-反-忠或者忠-反-忠-反，以及对应的反贼在一号位的情况。
+  座位排列固定是忠-反-反-忠。
 
   一人死亡后，其队友会摸一张牌。
 
@@ -13,15 +13,68 @@ local desc_2v2 = [[
 ]]
 
 local m_2v2_getLogic = function()
-  local m_2v2_logic = GameLogic:subclass("m_2v2_logic") ---@class GameLogic
+  ---@class m2v2Logic: GameLogic
+  local m_2v2_logic = GameLogic:subclass("m_2v2_logic")
 
   function m_2v2_logic:assignRoles()
+    local function getOtherPlayers(room, p)
+      local ret = table.simpleClone(room.players)
+      table.removeOne(ret, p)
+      return ret
+    end
+
+    local function getPlayerByScreenName(room, name)
+      return table.find(room.players, function(p)
+        return p._splayer:getScreenName() == name
+      end)
+    end
+
     local room = self.room
+    local croom = room.room
+    local cowner = croom:getOwner()
+    local owner = getPlayerByScreenName(room, cowner:getScreenName())
+    local buddy = room:askForChoosePlayers(owner, table.map(getOtherPlayers(room, owner), Util.IdMapper),
+      1, 1, "#m_2v2_choose_buddy", "", true)
+    buddy = room:getPlayerById(buddy[1])
+
+    -- local choices = table.map(getOtherPlayers(room, owner), function(p)
+    --   return "选择 " .. p._splayer:getScreenName() .. " 作为队友" 
+    -- end)
+    -- table.insert(choices, "Cancel")
+    -- local ownersbuddy = room:askForChoice(owner, choices, "", "#m_2v2_choose_buddy")
+    -- local buddy
+    -- if ownersbuddy == "Cancel" then
+    --   buddy = nil
+    -- else
+    --   local name = ownersbuddy:sub(8, -14)
+    --   buddy = getPlayerByScreenName(room, name)
+    -- end
+
+    if buddy then
+      local buddy_table = { 4, 3, 2, 1 }
+      local owner_seat = math.random(1, 4)
+      local buddy_seat = buddy_table[owner_seat]
+      local others = getOtherPlayers(room, owner)
+      table.removeOne(others, buddy)
+      table.shuffle(others)
+      local players = {}
+      players[owner_seat] = owner
+      players[buddy_seat] = buddy
+      if owner_seat == 1 or owner_seat == 4 then
+        players[2] = others[1]
+        players[3] = others[2]
+      else
+        players[1] = others[1]
+        players[4] = others[2]
+      end
+      room.players = players
+    else
+      table.shuffle(room.players)
+    end
+
     local n = #room.players
-    local roles = table.random {
-      { "loyalist", "rebel", "rebel", "loyalist" },
-      { "rebel", "loyalist", "loyalist", "rebel"},
-    }
+
+    local roles = { "loyalist", "rebel", "rebel", "loyalist" }
 
     for i = 1, n do
       local p = room.players[i]
@@ -158,6 +211,7 @@ Fk:loadTranslationTable{
   ["#m_2v2_rule"] = "2v2",
   ["time limitation: 2 min"] = "游戏时长达到2分钟",
   ["2v2: left you alive"] = "你所处队伍仅剩你存活",
+  ["#m_2v2_choose_buddy"] = "2v2：请房主选择自己的队友，点取消则随机",
 }
 
 Fk:addMiniGame{
