@@ -379,8 +379,17 @@ Fk:loadTranslationTable{
 
 local chasingNearSkill = fk.CreateActiveSkill{
   name = "chasing_near_skill",
+  prompt = "#chasing_near_skill",
   can_use = Util.CanUse,
   target_num = 1,
+  target_tip = function (self, to_select, selected, selected_cards, card, selectable, extra_data)
+    local to = Fk:currentRoom():getPlayerById(to_select)
+    if Self:distanceTo(to) == 1 then
+      return "@chasing_near_prey"
+    elseif Self:distanceTo(to) > 1 then
+      return "@chasing_near_throw"
+    end
+  end,
   mod_target_filter = function(self, to_select, selected, player, card, distance_limited)
     return to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isAllNude()
   end,
@@ -393,7 +402,7 @@ local chasingNearSkill = fk.CreateActiveSkill{
     if from:distanceTo(to) > 1 then
       room:throwCard({id}, self.name, to, from)
     elseif from:distanceTo(to) == 1 then
-      room:obtainCard(from, id, false, fk.ReasonPrey)
+      room:obtainCard(from, id, false, fk.ReasonPrey, from.id, self.name)
     end
   end
 }
@@ -412,6 +421,9 @@ Fk:loadTranslationTable{
   ["chasing_near_skill"] = "逐近弃远",
   [":chasing_near"] = "锦囊牌<br/><b>时机</b>：出牌阶段<br/><b>目标</b>：一名区域里有牌的其他角色<br/><b>效果</b>：若你与目标角色距离为1，"..
   "你获得其区域里一张牌；若你与目标角色距离大于1，你弃置其区域里一张牌。",
+  ["#chasing_near_skill"] = "选择距离为1/大于1的角色：获得/弃置其区域内一张牌",
+  ["@chasing_near_prey"] = "获得牌",
+  ["@chasing_near_throw"] = "弃置牌",
 }
 
 extension:addCards{
