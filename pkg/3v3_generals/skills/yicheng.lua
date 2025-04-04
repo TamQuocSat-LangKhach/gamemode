@@ -1,0 +1,53 @@
+local yicheng = fk.CreateSkill {
+  name = "v33__yicheng"
+}
+
+Fk:loadTranslationTable{
+  ['v33__yicheng'] = '疑城',
+  ['#v33__yicheng-ask'] = '疑城：是否令 %dest 摸一张牌并弃置一张手牌？',
+  ['#v33__yicheng-discard'] = '疑城：请弃置一张手牌，若为装备牌则改为使用之',
+  [':v33__yicheng'] = '当己方角色成为敌方角色使用【杀】的目标后，你可以令其摸一张牌，然后其弃置一张手牌；若弃置的是装备牌，则改为其使用之。',
+  ['$v33__yicheng1'] = '不怕死，就尽管放马过来！',
+  ['$v33__yicheng2'] = '待末将布下疑城，以退曹贼。',
+}
+
+yicheng:addEffect(fk.TargetConfirmed, {
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(yicheng.name) and table.contains(U.GetFriends(player.room, player), target) and data.card.trueName == "slash" and
+      table.contains(U.GetEnemies(player.room, player, true), player.room:getPlayerById(data.from))
+  end,
+  on_cost = function(self, event, target, player, data)
+    return player.room:askToSkillInvoke(player, {
+      skill_name = yicheng.name,
+      prompt = "#v33__yicheng-ask::"..target.id
+    })
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:doIndicate(player.id, {target.id})
+    target:drawCards(1, yicheng.name)
+    if not target.dead and not target:isKongcheng() then
+      local card = room:askToDiscard(target, {
+        min_num = 1,
+        max_num = 1,
+        include_equip = false,
+        skill_name = yicheng.name,
+        cancelable = false,
+        pattern = nil,
+        prompt = "#v33__yicheng-discard",
+        skip = true
+      })
+      if Fk:getCardById(card[1]).type == Card.TypeEquip and not target:prohibitDiscard(card[1]) then
+        room:useCard({
+          from = target.id,
+          tos = {{target.id}},
+          card = Fk:getCardById(card[1]),
+        })
+      else
+        room:throwCard(card, yicheng.name, target, target)
+      end
+    end
+  end
+})
+
+return yicheng

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Fk.Pages
-import Fk.RoomElement
+import Fk.Components.Room
 
 GraphicsBox {
   id: root
