@@ -63,7 +63,8 @@ local brawl_getLogic = function()
       local skills = general:getSkillNameList()
       local skill = table.random(skills) ---@type string
       local des = Fk:translate(":" .. skill, "zh_CN")
-      if not table.contains(ban_skills, skill) and not table.contains(skill_pool, skill) and not des:find("势力") and not des:find("[^属]性", nil, false) then
+      if not table.contains(ban_skills, skill) and not table.contains(skill_pool, skill) and
+        not des:find("势力") and not des:find("[^属]性", nil, false) then
         i = i + 1
         table.insert(skill_pool, skill)
         table.insert(general_pool, general.name)
@@ -148,34 +149,12 @@ local brawl_getLogic = function()
   return brawl_logic
 end
 
-local brawl_rule = fk.CreateTriggerSkill{
-  name = "#brawl_rule",
-
-  ---FIXME: 需要武将和图像分离的机制
-  -- 权宜之计，防止获得禁用武将的技能
-  refresh_events = {fk.EventAcquireSkill},
-  can_refresh = function (self, event, target, player, data)
-    if target == player then
-      local general = Fk.generals[player.general]
-      if general and table.contains(general:getSkillNameList(), data.name) then
-        return not Fk:canUseGeneral(player.general)
-      end
-    end
-  end,
-  on_refresh = function (self, event, target, player, data)
-    local room = player.room
-    room.logic:getCurrentEvent():addCleaner(function()
-      room:handleAddLoseSkills(player, "-"..data.name, nil)
-    end)
-  end,
-}
-Fk:addSkill(brawl_rule)
 local brawl_mode = fk.CreateGameMode{
   name = "brawl_mode",
   minPlayer = 3,
   maxPlayer = 3,
   main_mode = "1v2_mode",
-  rule = brawl_rule,
+  rule = Fk.skills["#1v2_brawl&"] --[[@as TriggerSkill]],
   logic = brawl_getLogic,
   surrender_func = function(self, playedTime)
     local surrenderJudge = { { text = "time limitation: 2 min", passed = playedTime >= 120 } }
@@ -192,15 +171,23 @@ local brawl_mode = fk.CreateGameMode{
     if victim.role == "rebel" then
       for _, p in ipairs(room:getOtherPlayers(victim)) do
         if p.role == "rebel" then
-          local choices = {"m_1v2_draw2", "Cancel"}
+          local choices = {"draw2", "Cancel"}
           if p:isWounded() then
-            table.insert(choices, 2, "m_1v2_heal")
+            table.insert(choices, 2, "recover")
           end
-          local choice = room:askForChoice(p, choices, "PickLegacy")
-          if choice == "m_1v2_draw2" then
-            p:drawCards(2, self.name)
+          local choice = room:askToChoice(p, {
+            choices = choices,
+            skill_name = "PickLegacy",
+          })
+          if choice == "draw2" then
+            p:drawCards(2, "game_rule")
           else
-            room:recover{ who = p, num = 1, skillName = self.name }
+            room:recover{
+              who = p,
+              num = 1,
+              recoverBy = p,
+              skillName = "game_rule",
+            }
           end
         end
       end
@@ -210,11 +197,11 @@ local brawl_mode = fk.CreateGameMode{
 
 Fk:loadTranslationTable{
   ["brawl_mode"] = "1v2大乱斗",
+  [":brawl_mode"] = desc_brawl,
+
   ["#brawl_rule"] = "1v2大乱斗",
   ["#brawl-choose"] = "请选择%arg个技能出战",
   ["@brawl_skills"] = "",
-  ["PickLegacy"] = "挑选遗产",
-  [":brawl_mode"] = desc_brawl,
 
   ["#BrawlInitialNotice"] = "修订：农民抽取技能数为房间“<b>可选武将数</b>”，地主多拿一半（向下取整）",
 }

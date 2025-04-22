@@ -280,7 +280,6 @@ local m_1v1_mode = fk.CreateGameMode{
     return draw_pile, void
   end
 }
--- extension:addGameMode(m_1v1_mode)
 Fk:loadTranslationTable{
   ["m_1v1_mode"] = "1v1",
   ["#1v1ChooseGeneralsLog"] = "%arg 选择了 %arg2 %arg3",

@@ -1,88 +1,5 @@
--- SPDX-License-Identifier: GPL-3.0-or-later
-local extension = Package("gamemode_generals")
-extension.extensionName = "gamemode"
-
-local U = require "packages/utility/utility"
-
-Fk:loadTranslationTable{
-  ["gamemode_generals"] = "模式专属武将",
-  ["v22"] = "2v2",
-  ["v11"] = "1v1",
-  ["vd"] = "忠胆",
-  ["var"] = "应变",
-}
-
-local zombie = General(extension, "zombie", "god", 1)
-zombie.hidden = true
-local xunmeng = fk.CreateTriggerSkill{
-  name = "zombie_xunmeng",
-  anim_type = "offensive",
-  frequency = Skill.Compulsory,
-  events = {fk.DamageCaused},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and data.card and data.card.trueName == "slash"
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    data.damage = data.damage + 1
-    if player.hp > 1 then
-      room:loseHp(player, 1, self.name)
-    end
-  end,
-}
-local zaibian = fk.CreateTriggerSkill{
-  name = "zombie_zaibian",
-  anim_type = "drawcard",
-  frequency = Skill.Compulsory,
-  events = {fk.DrawNCards},
-  can_trigger = function(self, event, target, player, data)
-    if not (player == target and player:hasSkill(self)) then return end
-    local room = player.room
-    local human = #table.filter(room.alive_players, function(p)
-      return p.role == "lord" or p.role == "loyalist"
-    end)
-    local zombie = #room.alive_players - human
-    return human - zombie + 1 > 0
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local human = #table.filter(room.alive_players, function(p)
-      return p.role == "lord" or p.role == "loyalist"
-    end)
-    local zombie = #room.alive_players - human
-    data.n = data.n + (human - zombie + 1)
-  end,
-}
-local ganran = fk.CreateFilterSkill{
-  name = "zombie_ganran",
-  card_filter = function(self, to_select, player)
-    return player:hasSkill(self) and to_select.type == Card.TypeEquip and
-    table.contains(player.player_cards[Player.Hand], to_select.id)
-  end,
-  view_as = function(self, to_select)
-    local card = Fk:cloneCard("iron_chain", to_select.suit, to_select.number)
-    card.skillName = self.name
-    return card
-  end,
-}
-zombie:addSkill("ex__paoxiao")
-zombie:addSkill("ol_ex__wansha")
-zombie:addSkill(xunmeng)
-zombie:addSkill(zaibian)
-zombie:addSkill(ganran)
-Fk:loadTranslationTable{
-  ["zombie"] = "僵尸",
-  ["zombie_xunmeng"] = "迅猛",
-  [":zombie_xunmeng"] = "锁定技，你的【杀】造成伤害时，令此伤害+1，若此时你的体力值大于1，则你失去1点体力。",
-  ["zombie_zaibian"] = "灾变",
-  [":zombie_zaibian"] = "锁定技，摸牌阶段，若X大于0，则你多摸X张牌（X为人类玩家数-僵尸玩家数+1）。",
-  ["zombie_ganran"] = "感染",
-  [":zombie_ganran"] = "锁定技，你手牌中的装备牌视为【铁锁连环】。",
-}
 
 local hiddenone = General(extension, "hiddenone", "jin", 1)
-hiddenone.hidden = true
-hiddenone.fixMaxHp = 1
 local hidden_skill = fk.CreateTriggerSkill{
   name = "hidden_skill&",
   priority = 0.001,
@@ -168,12 +85,7 @@ local hidden_skill = fk.CreateTriggerSkill{
     end
   end,
 }
-hiddenone:addSkill(hidden_skill)
 Fk:loadTranslationTable{
-  ["hiddenone"] = "隐匿者",
-  ["#hiddenone"] = "隐介藏形",
-  ["illustrator:hiddenone"] = "佚名",  --九鼎的隐匿牌上真就写着illustration：佚名
-
   ["hidden_skill&"] = "隐匿",
   [":hidden_skill&"] = "若你为隐匿将，防止你改变体力上限。当你扣减体力后，或你回合开始时，你解除隐匿状态。",
 }
@@ -245,14 +157,7 @@ local v22__kuiji_trigger = fk.CreateTriggerSkill{
     })
   end,
 }
-v22__kuiji:addRelatedSkill(v22__kuiji_trigger)
-v22__leitong:addSkill(v22__kuiji)
 Fk:loadTranslationTable{
-  ["v22__leitong"] = "雷铜",
-  ["#v22__leitong"] = "石铠之鼋",
-  ["designer:v22__leitong"] = "梦魇狂朝",
-  ["illustrator:v22__leitong"] = "M云涯",
-
   ["v22__kuiji"] = "溃击",
   [":v22__kuiji"] = "出牌阶段限一次，你可以将一张黑色基本牌当作【兵粮寸断】置于你的判定区，然后摸一张牌。若如此做，你可以对体力值最多的一名敌方角色"..
   "造成2点伤害，其因此进入濒死状态时，体力值最少的一名友方角色回复1点体力。",
@@ -262,14 +167,6 @@ Fk:loadTranslationTable{
 
   ["$v22__kuiji1"] = "绝域奋击，孤注一掷。",
   ["$v22__kuiji2"] = "舍得一身剐，不畏君王威。",
-  ["~v22__leitong"] = "翼德救我……",
-}
-
-Fk:loadTranslationTable{
-  ["v22__wulan"] = "吴兰",
-  ["v22__cuoruiw"] = "挫锐",
-  [":v22__cuoruiw"] = "出牌阶段开始时，你可以弃置一名友方角色区域内的一张牌。若如此做，你选择一项：1.弃置敌方角色装备区内至多两张与此牌颜色相同的牌；"..
-  "2.展示敌方角色共计两张手牌，然后获得其中与此牌颜色相同的牌。",
 }
 
 local huangfusong = General(extension, "vd__huangfusong", "qun", 4)
@@ -328,21 +225,13 @@ local vd__fenyue_prohibit = fk.CreateProhibitSkill{
     end
   end,
 }
-vd__fenyue:addRelatedSkill(vd__fenyue_prohibit)
-huangfusong:addSkill(vd__fenyue)
 Fk:loadTranslationTable{
-  ["vd__huangfusong"] = "皇甫嵩",
-  ["#vd__huangfusong"] = "志定雪霜",
-  ["designer:vd__huangfusong"] = "千幻",
-  ["illustrator:vd__huangfusong"] = "秋呆呆",
   ["vd__fenyue"] = "奋钺",
   [":vd__fenyue"] = "出牌阶段限X次，你可以与一名角色拼点，若你赢，你选择一项：1.其不能使用或打出手牌直到回合结束；2.视为你对其使用一张不计入次数的【杀】。若你没赢，你结束出牌阶段(X为存活的忠臣数)。",
   ["vd__fenyue_slash"] = "视为对其使用【杀】",
   ["vd__fenyue_prohibit"] = "本回合禁止其使用/打出手牌",
   ["@@vd__fenyue-turn"] = "被奋钺",
 }
-
-
 
 local var__yangyan = General(extension, "var__yangyan", "jin", 3, 3, General.Female)
 local nos__xuanbei = fk.CreateTriggerSkill{
@@ -390,77 +279,11 @@ local nos__xuanbei = fk.CreateTriggerSkill{
     end
   end,
 }
-var__yangyan:addSkill(nos__xuanbei)
-var__yangyan:addSkill("xianwan")
 Fk:loadTranslationTable{
-  ["var__yangyan"] = "杨艳",
-  ["#var__yangyan"] = "武元皇后",
-  ["illustrator:var__yangyan"] = "张艺骞",
   ["nos__xuanbei"] = "选备",
   [":nos__xuanbei"] = "游戏开始时，你获得两张带有应变效果的牌。每回合限一次，当你使用带有应变效果的牌结算后，你可以将之交给一名其他角色。",
   ["#nos__xuanbei-give"] = "选备：你可以将 %arg 交给一名其他角色",
 
   ["$nos__xuanbei1"] = "男胤有德色，愿陛下以备六宫。",
   ["$nos__xuanbei2"] = "广集良家，召充选者使吾拣择。",
-  ["$xianwan_var__yangyan1"] = "姿容娴婉，服饰华光。",
-  ["$xianwan_var__yangyan2"] = "有美一人，清扬婉兮。",
-  ["~var__yangyan"] = "后承前训，奉述遗芳……",
 }
-
-local var__yangzhi = General(extension, "var__yangzhi", "jin", 3, 3, General.Female)
-local nos__wanyi = fk.CreateViewAsSkill{
-  name = "nos__wanyi",
-  prompt = "#nos__wanyi",
-  interaction = function()
-    local all_names = {"chasing_near", "unexpectation", "drowning", "foresight"}
-    local names = table.simpleClone(all_names)
-    for _, name in ipairs(all_names) do
-      if table.contains(Self:getTableMark("nos__wanyi-turn"), name) then
-        table.removeOne(names, name)
-      end
-    end
-    if #names == 0 then return end
-    return UI.ComboBox {choices = names, all_choices = all_names,}
-  end,
-  card_filter = function (self, to_select, selected)
-    return #selected == 0 and table.find({"@fujia", "@kongchao", "@canqu", "@zhuzhan"}, function(mark)
-      return Fk:getCardById(to_select):getMark(mark) ~= 0 end)
-  end,
-  before_use = function (self, player, use)
-    local mark = player:getTableMark("nos__wanyi-turn")
-    table.insert(mark, use.card.name)
-    player.room:setPlayerMark(player, "nos__wanyi-turn", mark)
-  end,
-  view_as = function(self, cards)
-    if #cards ~= 1 or not self.interaction.data then return end
-    local card = Fk:cloneCard(self.interaction.data)
-    card:addSubcard(cards[1])
-    card.skillName = self.name
-    return card
-  end,
-}
-var__yangzhi:addSkill(nos__wanyi)
-var__yangzhi:addSkill("maihuo")
-Fk:loadTranslationTable{
-  ["var__yangzhi"] = "杨芷",
-  ["#var__yangzhi"] = "武悼皇后",
-  ["illustrator:var__yangzhi"] = "张艺骞",
-  ["nos__wanyi"] = "婉嫕",
-  [":nos__wanyi"] = "出牌阶段每种牌名限一次，你可以将一张带有应变效果的牌当【逐近弃远】、【出其不意】、【水淹七军】或【洞烛先机】使用。",
-  ["#nos__wanyi"] = "婉嫕：你可以将一张带有应变效果的牌当一种应变篇锦囊使用",
-
-  ["$nos__wanyi1"] = "婉嫕而淑慎，位居正室。",
-  ["$nos__wanyi2"] = "为后需备贞静之德、婉嫕之操。",
-  ["$maihuo_var__yangzhi1"] = "至亲约束不严，祸根深埋。",
-  ["$maihuo_var__yangzhi2"] = "闻祸端而不备，可亡矣。",
-  ["~var__yangzhi"] = "姊妹继宠，福极灾生……",
-}
-
-
-
-
-
-
-
-
-return extension

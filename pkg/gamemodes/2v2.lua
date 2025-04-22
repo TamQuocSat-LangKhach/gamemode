@@ -5,7 +5,7 @@ local desc_2v2 = [[
 
   座位排列固定是忠-反-反-忠。
 
-  一人死亡后，其队友会摸一张牌。
+  一名角色死亡后，其队友会摸一张牌。
 
   第一回合角色摸牌阶段少摸一张牌。四号位多摸一张初始手牌。
 
@@ -33,9 +33,15 @@ local m_2v2_getLogic = function()
     local croom = room.room
     local cowner = croom:getOwner()
     local owner = getPlayerByScreenName(room, cowner:getScreenName())
-    local buddy = room:askForChoosePlayers(owner, table.map(getOtherPlayers(room, owner), Util.IdMapper),
-      1, 1, "#m_2v2_choose_buddy", "", true)
-    buddy = room:getPlayerById(buddy[1])
+    local buddy = room:askToChoosePlayers(owner, {
+      min_num = 1,
+      max_num = 1,
+      targets = getOtherPlayers(room, owner),
+      skill_name = "game_rule",
+      prompt = "#m_2v2_choose_buddy",
+      cancelable = false,
+      no_indicate = true,
+    })[1]
 
     -- local choices = table.map(getOtherPlayers(room, owner), function(p)
     --   return "选择 " .. p._splayer:getScreenName() .. " 作为队友" 
@@ -112,73 +118,46 @@ local m_2v2_getLogic = function()
     local t2 = table.slice(generals, generalNum + 1, generalNum * 2 + 1)
     local t3 = table.slice(generals, generalNum * 2 + 1, generalNum * 3 + 1)
     local t4 = table.slice(generals, generalNum * 3 + 1, generalNum * 4 + 1)
-    room:askForMiniGame(nonlord, "AskForGeneral", "2v2_sel", {
-      [nonlord[1].id] = {
-        friend_id = nonlord[4].id,
-        me = t1, friend = t4,
-      },
-      [nonlord[2].id] = {
-        friend_id = nonlord[3].id,
-        me = t2, friend = t3,
-      },
-      [nonlord[3].id] = {
-        friend_id = nonlord[2].id,
-        me = t3, friend = t2,
-      },
-      [nonlord[4].id] = {
-        friend_id = nonlord[1].id,
-        me = t4, friend = t1,
-      },
+    room:askToMiniGame(nonlord, {
+      skill_name = "AskForGeneral",
+      game_type = "2v2_sel",
+      data_table = {
+        [nonlord[1].id] = {
+          friend_id = nonlord[4].id,
+          me = t1, friend = t4,
+        },
+        [nonlord[2].id] = {
+          friend_id = nonlord[3].id,
+          me = t2, friend = t3,
+        },
+        [nonlord[3].id] = {
+          friend_id = nonlord[2].id,
+          me = t3, friend = t2,
+        },
+        [nonlord[4].id] = {
+          friend_id = nonlord[1].id,
+          me = t4, friend = t1,
+        },
+      }
     })
-
     for _, p in ipairs(nonlord) do
       local general = json.decode(p.client_reply)
       room:setPlayerGeneral(p, general, true, true)
       room:findGeneral(general)
     end
 
-    room:askForChooseKingdom(nonlord)
+    room:askToChooseKingdom(nonlord)
     room:setTag("SkipNormalDeathProcess", true)
   end
 
   return m_2v2_logic
 end
-local m_2v2_rule = fk.CreateTriggerSkill{
-  name = "#m_2v2_rule",
-  mute = true,
-  priority = 0.001,
-  events = {fk.DrawInitialCards, fk.DrawNCards, fk.Deathed},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and not (event == fk.Deathed and player.rest > 0)
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.DrawNCards then
-      local turnevents = room.logic.event_recorder[GameEvent.Turn] or Util.DummyTable
-      if #turnevents == 1 and player:getMark(self.name) == 0 then
-        room:setPlayerMark(player, self.name, 1)
-        data.n = data.n - 1
-      end
-    elseif event == fk.DrawInitialCards then
-      if player.seat == 4 then
-        data.num = data.num + 1
-      end
-    else
-      for _, p in ipairs(room.alive_players) do
-        if p.role == player.role then
-          p:drawCards(1, self.name)
-        end
-      end
-    end
-  end,
-}
-Fk:addSkill(m_2v2_rule)
+
 local m_2v2_mode = fk.CreateGameMode{
   name = "m_2v2_mode",
   minPlayer = 4,
   maxPlayer = 4,
-  rule = m_2v2_rule,
+  rule = Fk.skills["#m_2v2_rule&"] --[[@as TriggerSkill]],
   logic = m_2v2_getLogic,
   main_mode = "2v2_mode",
   surrender_func = function(self, playedTime)
@@ -204,14 +183,25 @@ local m_2v2_mode = fk.CreateGameMode{
     end
     return winner
   end,
+  reward_punish = function (self, victim, killer)
+    local room = victim.room
+    if victim.rest <= 0 then
+      for _, p in ipairs(room.alive_players) do
+        if p.role == victim.role then
+          p:drawCards(1, "game_rule")
+        end
+      end
+    end
+  end,
 }
 Fk:loadTranslationTable{
   ["m_2v2_mode"] = "2v2",
   [":m_2v2_mode"] = desc_2v2,
-  ["#m_2v2_rule"] = "2v2",
+
+  ["#m_2v2_choose_buddy"] = "请房主选择自己的队友",
+
   ["time limitation: 2 min"] = "游戏时长达到2分钟",
   ["2v2: left you alive"] = "你所处队伍仅剩你存活",
-  ["#m_2v2_choose_buddy"] = "2v2：请房主选择自己的队友，点取消则随机",
 }
 
 Fk:addMiniGame{

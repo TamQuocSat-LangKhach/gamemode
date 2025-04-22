@@ -1,15 +1,15 @@
 local zaibian = fk.CreateSkill {
-  name = "zombie_zaibian"
+  name = "zombie_zaibian",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['zombie_zaibian'] = '灾变',
-  [':zombie_zaibian'] = '锁定技，摸牌阶段，若X大于0，则你多摸X张牌（X为人类玩家数-僵尸玩家数+1）。',
+  ["zombie_zaibian"] = "灾变",
+  [":zombie_zaibian"] = "锁定技，摸牌阶段，若X大于0，则你多摸X张牌（X为人类玩家数-僵尸玩家数+1）。",
 }
 
 zaibian:addEffect(fk.DrawNCards, {
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     if not (player == target and player:hasSkill(zaibian.name)) then return end
     local room = player.room

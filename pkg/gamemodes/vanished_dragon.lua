@@ -120,7 +120,7 @@ local vanished_dragon_getLogic = function()
     local room = self.room---@type Room
 
     local generals_blacklist = {
-      "cuiyan", "vd__huangfusong", -- 明忠备选
+      "vd__cuiyan", "vd__huangfusong", -- 明忠备选
       "js__caocao", "js__zhugeliang", "ol__dongzhao","std__yuanshu", "huanghao", -- 暴露暗主
     }
     local loyalist_list = {}

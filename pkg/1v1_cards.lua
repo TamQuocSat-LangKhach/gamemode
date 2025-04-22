@@ -33,7 +33,7 @@ extension:addCards{
 
   Fk:cloneCard("jink", Card.Heart, 2),
   Fk:cloneCard("jink", Card.Heart, 5),
-  
+
   Fk:cloneCard("jink", Card.Diamond, 2),
   Fk:cloneCard("jink", Card.Diamond, 3),
   Fk:cloneCard("jink", Card.Diamond, 7),
