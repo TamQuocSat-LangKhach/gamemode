@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Fk
 import Fk.Pages
-import Fk.Components.Room
+import Fk.RoomElement
 import Qt5Compat.GraphicalEffects
 
 GraphicsBox {

@@ -66,8 +66,13 @@ local m_1v1_getLogic = function()
       local my_selected = (p == lord) and first_selected or second_selected
       local ur_selected = (p == lord) and second_selected or first_selected
       local my_genrals = (p == lord) and lord_generals or nonlord_generals
-      local result = room:askForCustomDialog(p, "m_1v1_mode", "packages/gamemode/qml/1v1.qml",
-      { all_generals, n, my_selected, ur_selected, prompt } )
+      local result = room:askToCustomDialog(p, {
+        skill_name = "m_1v1_mode",
+        qml_path = "packages/gamemode/qml/1v1.qml",
+        extra_data = {
+          all_generals, n, my_selected, ur_selected, prompt
+        }
+      })
       local selected = {}
       if result ~= "" then
         result = json.decode(result)
@@ -134,130 +139,19 @@ local m_1v1_getLogic = function()
     room:setBanner("@secondFallen", "0 / 3")
     updataGeneralPile(lord)
     updataGeneralPile(nonlord)
-    room:askForChooseKingdom(room.players)
+    room:askToChooseKingdom(room.players)
+
+    room:addSkill(Fk.skills["#m_1v1_rule&"])
   end
 
   return m_1v1_logic
 end
 
-local function drawInit(room, player, n)
-  -- TODO: need a new function to call the UI
-  local cardIds = room:getNCards(n)
-  player:addCards(Player.Hand, cardIds)
-  for _, id in ipairs(cardIds) do
-    Fk:filterCard(id, player)
-  end
-  local move_to_notify = {}   ---@type CardsMoveStruct
-  move_to_notify.toArea = Card.PlayerHand
-  move_to_notify.to = player.id
-  move_to_notify.moveInfo = {}
-  move_to_notify.moveReason = fk.ReasonDraw
-  for _, id in ipairs(cardIds) do
-    table.insert(move_to_notify.moveInfo,
-    { cardId = id, fromArea = Card.DrawPile })
-  end
-  room:notifyMoveCards(nil, {move_to_notify})
-
-  for _, id in ipairs(cardIds) do
-    table.removeOne(room.draw_pile, id)
-    room:setCardArea(id, Card.PlayerHand, player.id)
-  end
-end
-
-local m_1v1_rule = fk.CreateTriggerSkill{
-  name = "#m_1v1_rule",
-  priority = 0.001,
-  refresh_events = {fk.DrawInitialCards, fk.DrawNCards, fk.GameOverJudge, fk.BuryVictim, fk.GameStart},
-  can_refresh = function(self, event, target, player, data)
-    return target == player
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.DrawInitialCards then
-      data.num = math.min(player.maxHp, 5)
-    elseif event == fk.DrawNCards then
-      if player.role == "lord" and player.tag[self.name] == nil then
-        player.tag[self.name] = 1
-        data.n = data.n - 1
-      end
-    elseif event == fk.GameOverJudge then
-      room:setTag("SkipGameRule", true)
-      local body = room:getPlayerById(data.who)
-      if body.rest > 0 then return end
-      local num, num2 = tonumber(room:getBanner("@firstFallen")[1]), tonumber(room:getBanner("@secondFallen")[1])
-      if body.role == "lord" then num = num + 1 else num2 = num2 + 1 end
-      room:setBanner("@firstFallen", tostring(num) .. " / 3")
-      room:setBanner("@secondFallen", tostring(num2) .. " / 3")
-      room:sendLog{
-        type = "#1v1Score",
-        arg = num,
-        arg2 = num2,
-        toast = true,
-      }
-      if num < 3 and num2 < 3 then return end
-      room:gameOver(body.next.role)
-      return true
-    elseif event == fk.GameStart then
-      room.logic:trigger("fk.Debut", player, player.general, false)
-      room.logic:trigger("fk.Debut", player.next, player.general, false)
-    elseif event == fk.BuryVictim then
-      room:setTag("SkipGameRule", true)
-      local body = room:getPlayerById(data.who)
-      local generals = room:getBanner(body.role == "lord" and "@&firstGenerals" or "@&secondGenerals")
-      body:bury()
-      if body.rest > 0 then return end
-      local exiled_name = body.role == "lord" and "@&firstExiled" or "@&secondExiled"
-      local exiled_generals = room:getBanner(exiled_name) or  {}
-      table.insert(exiled_generals, body.general)
-      room:setBanner(exiled_name, exiled_generals)
-      if #generals == 0 then
-        room:gameOver(body.next.role)
-        return
-      end
-      local current = room.logic:getCurrentEvent()
-      local last_event = nil
-      if room.current.dead then
-        last_event = current:findParent(GameEvent.Turn, true)
-      end
-      if last_event == nil then
-        last_event = current
-        if last_event.parent then
-          repeat
-            if table.contains({GameEvent.Round, GameEvent.Turn, GameEvent.Phase}, last_event.parent.event) then break end
-            last_event = last_event.parent
-          until (not last_event.parent)
-        end
-      end
-      last_event:addCleaner(function()
-        local g = room:askForGeneral(body, generals, 1)
-        if type(g) == "table" then g = g[1] end
-        removeGeneral(generals, g)
-        room:setBanner(body.role == "lord" and "@&firstGenerals" or "@&secondGenerals", generals)
-
-        local to_rm = table.filter(body.player_skills, function(s)
-          return not s.attached_equip and s.name[#s.name] ~= "&" -- 不是装备技和按钮的全图图了
-        end)
-        room:handleAddLoseSkills(body, table.concat(
-          table.map(to_rm, function(s) return "-" .. s.name end), "|"), nil, true)
-        room:resumePlayerArea(target, {Player.WeaponSlot, Player.ArmorSlot, Player.OffensiveRideSlot, Player.DefensiveRideSlot, Player.TreasureSlot, Player.JudgeSlot}) -- 全部恢复
-
-        room:changeHero(body, g, true, false, true)
-
-        -- trigger leave
-
-        room:setPlayerProperty(body, "shield", Fk.generals[g].shield)
-        room:revivePlayer(body, false)
-        drawInit(room, body, math.min(body.maxHp, 5))
-        room.logic:trigger("fk.Debut", body, player.general, false)
-      end)
-    end
-  end,
-}
 local m_1v1_mode = fk.CreateGameMode{
   name = "m_1v1_mode",
   minPlayer = 2,
   maxPlayer = 2,
-  rule = m_1v1_rule,
+  --rule = Fk.skills["#m_1v1_rule&"] --[[@as TriggerSkill]],
   logic = m_1v1_getLogic,
   surrender_func = function(self, playedTime)
     return { { text = "time limitation: 2 min", passed = playedTime >= 120 } }

@@ -33,23 +33,23 @@ local role_mode = fk.CreateGameMode{
         room:gameOver("")
       end
 
-      local lord_general = room:askForGeneral(lord, lord_generals, 1)---@type string
+      local lord_general = room:askToChooseGeneral(lord, {generals = lord_generals, n = 1})---@type string
       room:returnToGeneralPile(lord_generals)
       room:findGeneral(lord_general)
 
       room:prepareGeneral(lord, lord_general, "", true)
-      room:askForChooseKingdom({lord})
+      room:askToChooseKingdom({lord})
       room:broadcastProperty(lord, "kingdom")
 
 
       local lord_skills = Fk.generals[lord.general]:getSkillNameList(true)
       for _, sname in ipairs(lord_skills) do
         local skill = Fk.skills[sname]
-        if #skill.attachedKingdom == 0 or table.contains(skill.attachedKingdom, lord.kingdom) then
+        if not skill:hasTag(Skill.AttachedKingdom) or table.contains(skill:getSkeleton().attached_kingdom, lord.kingdom) then
           room:doBroadcastNotify("AddSkill", json.encode{ lord.id, sname })
         end
       end
-  
+
       local nonlord = room:getOtherPlayers(lord, true)
       local generals = table.random(room.general_pile, #nonlord * generalNum)
       if #generals < #nonlord * generalNum then
@@ -64,16 +64,13 @@ local role_mode = fk.CreateGameMode{
         req:setDefaultReply(p, table.random(arg, 1))
       end
 
-      local selected = {}
       for _, p in ipairs(nonlord) do
         local result = req:getResult(p)
         local general = result[1]
         room:findGeneral(general)
         room:prepareGeneral(p, general, "")
       end
-
-      room:askForChooseKingdom(nonlord)
-
+      room:askToChooseKingdom(nonlord)
     end
 
     return l

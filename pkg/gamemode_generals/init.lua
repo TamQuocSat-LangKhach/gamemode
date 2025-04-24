@@ -46,9 +46,6 @@ Fk:loadTranslationTable{
   ["designer:v22__wulan"] = "梦魇狂朝",
   ["illustrator:v22__wulan"] = "alien",
 
-  ["v22__cuoruiw"] = "挫锐",
-  [":v22__cuoruiw"] = "出牌阶段开始时，你可以弃置一名友方角色区域内的一张牌。若如此做，你选择一项：1.弃置敌方角色装备区内至多两张与此牌颜色相同的牌；"..
-  "2.展示敌方角色共计两张手牌，然后获得其中与此牌颜色相同的牌。",
   ["~v22__wulan"] = "蛮狗，尔敢杀我！",
 }
 
@@ -92,6 +89,54 @@ Fk:loadTranslationTable{
   ["$maihuo_var__yangzhi1"] = "至亲约束不严，祸根深埋。",
   ["$maihuo_var__yangzhi2"] = "闻祸端而不备，可亡矣。",
   ["~var__yangzhi"] = "姊妹继宠，福极灾生……",
+}
+
+General:new(extension, "chaos__jiaxu", "qun", 3):addSkills { "miesha", "luanwu", "weimu" }
+Fk:loadTranslationTable{
+  ["chaos__jiaxu"] = "贾诩",
+  ["#chaos__jiaxu"] = "冷酷的毒士",
+  ["illustrator:chaos__jiaxu"] = "小牛",
+
+  ["~chaos__jiaxu"] = "",
+}
+
+General:new(extension, "chaos__guosi", "qun", 4):addSkills { "chaos__tanbei", "sidao" }
+Fk:loadTranslationTable{
+  ["chaos__guosi"] = "郭汜",
+  ["#chaos__guosi"] = "伺机而动",
+  ["illustrator:chaos__guosi"] = "小牛",
+
+  ["~chaos__guosi"] = "",
+}
+
+General:new(extension, "chaos__lijue", "qun", 4, 6):addSkills { "feixiong", "cesuan" }
+Fk:loadTranslationTable{
+  ["chaos__lijue"] = "李傕",
+  ["#chaos__lijue"] = "擅算谋划",
+  ["illustrator:chaos__lijue"] = "Thinking",
+
+  ["~chaos__lijue"] = "",
+}
+
+General:new(extension, "chaos__fanchou", "qun", 4):addSkills { "yangwu" }
+Fk:loadTranslationTable{
+  ["chaos__fanchou"] = "樊稠",
+  ["#chaos__fanchou"] = "庸生变难",
+  ["illustrator:chaos__fanchou"] = "枭瞳",
+
+  ["~chaos__fanchou"] = "",
+
+  ["yangwu"] = "扬武",
+  [":yangwu"] = "出牌阶段限一次，你可以将一张<font color='red'>♥</font>手牌当【李代桃僵】使用；你使用的【李代桃僵】效果改为观看目标角色的手牌并获得。",
+}
+
+General:new(extension, "chaos__zhangji", "qun", 4):addSkills { "chaos__lulue" }
+Fk:loadTranslationTable{
+  ["chaos__zhangji"] = "张济",
+  ["#chaos__zhangji"] = "武威雄豪",
+  ["illustrator:chaos__zhangji"] = "铁杵文化",
+
+  ["~chaos__zhangji"] = "",
 }
 
 return extension

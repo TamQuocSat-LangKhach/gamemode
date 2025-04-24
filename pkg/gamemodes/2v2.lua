@@ -148,6 +148,7 @@ local m_2v2_getLogic = function()
 
     room:askToChooseKingdom(nonlord)
     room:setTag("SkipNormalDeathProcess", true)
+    room:addSkill(Fk.skills["#m_2v2_rule&"])
   end
 
   return m_2v2_logic
@@ -157,7 +158,7 @@ local m_2v2_mode = fk.CreateGameMode{
   name = "m_2v2_mode",
   minPlayer = 4,
   maxPlayer = 4,
-  rule = Fk.skills["#m_2v2_rule&"] --[[@as TriggerSkill]],
+  --rule = Fk.skills["#m_2v2_rule&"] --[[@as TriggerSkill]],
   logic = m_2v2_getLogic,
   main_mode = "2v2_mode",
   surrender_func = function(self, playedTime)
