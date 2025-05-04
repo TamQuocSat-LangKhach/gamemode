@@ -1,14 +1,14 @@
 local zhanshen = fk.CreateSkill {
-  name = "zhanshen"
+  name = "zhanshen",
+  tags = { Skill.Wake },
 }
 
 Fk:loadTranslationTable{
-  ['zhanshen'] = '战神',
-  [':zhanshen'] = '觉醒技，准备阶段，若你已受伤且己方有角色已死亡，你减1点体力上限，获得技能〖马术〗和〖神戟〗。',
+  ["zhanshen"] = "战神",
+  [":zhanshen"] = "觉醒技，准备阶段，若你已受伤且己方有角色已死亡，你减1点体力上限，获得技能〖马术〗和〖神戟〗。",
 }
 
 zhanshen:addEffect(fk.EventPhaseStart, {
-  frequency = Skill.Wake,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(zhanshen.name) and
       player.phase == Player.Start and

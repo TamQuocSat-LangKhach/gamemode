@@ -1,15 +1,15 @@
 local jiange__tianjiang = fk.CreateSkill {
-  name = "jiange__tianjiang"
+  name = "jiange__tianjiang",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['jiange__tianjiang'] = '天将',
-  [':jiange__tianjiang'] = '锁定技，当友方角色每回合首次使用【杀】造成伤害后，其摸一张牌。',
+  ["jiange__tianjiang"] = "天将",
+  [":jiange__tianjiang"] = "锁定技，当友方角色每回合首次使用【杀】造成伤害后，其摸一张牌。",
 }
 
 jiange__tianjiang:addEffect(fk.Damage, {
   anim_type = "support",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     if target and player:hasSkill(jiange__tianjiang.name) and data.card and data.card.trueName == "slash" and
       table.contains(U.GetFriends(player.room, player), target) then

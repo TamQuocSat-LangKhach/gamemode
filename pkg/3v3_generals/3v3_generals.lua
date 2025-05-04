@@ -172,7 +172,7 @@ local zhongyi = fk.CreateActiveSkill{
   can_use = function(self, player)
     return #player:getPile(self.name) == 0
   end,
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     return Fk:getCardById(to_select).color == Card.Red
   end,
   on_use = function(self, room, effect)
@@ -270,7 +270,6 @@ local lvbu = General(extension, "v33_nos__lvbu", "qun", 4)
 lvbu.hidden = true
 local zhanshen = fk.CreateTriggerSkill{
   name = "zhanshen",
-  frequency = Skill.Wake,
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and
@@ -311,7 +310,6 @@ local choujin = fk.CreateTriggerSkill{
   name = "choujin",
   anim_type = "special",
   events = {fk.GamePrepared},
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self)
   end,
@@ -326,7 +324,6 @@ local choujin = fk.CreateTriggerSkill{
 local choujin_delay = fk.CreateTriggerSkill{
   name = "#choujin_delay",
   mute = true,
-  frequency = Skill.Compulsory,
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target and player:usedSkillTimes("choujin", Player.HistoryGame) > 0 and
@@ -355,7 +352,7 @@ local zhongjianh = fk.CreateActiveSkill{
   card_filter = function (self, to_select, selected)
     return #selected == 0
   end,
-  target_filter = function(self, to_select, selected)
+  target_filter = function(self, player, to_select, selected)
     return #selected == 0 and table.contains(U.GetFriends(Fk:currentRoom(), Self, false), Fk:currentRoom():getPlayerById(to_select))
   end,
   on_use = function(self, room, effect)
@@ -396,7 +393,6 @@ local v33__lvbu = General(extension, "v33__lvbu", "qun", 4)
 local v33__zhanshen = fk.CreateTriggerSkill{
   name = "v33__zhanshen",
   anim_type = "special",
-  frequency = Skill.Compulsory,
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) and player.phase == Player.Start then

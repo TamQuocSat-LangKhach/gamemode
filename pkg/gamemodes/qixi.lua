@@ -388,7 +388,7 @@ local qixi_jieban = fk.CreateActiveSkill{
   card_num = 1,
   target_num = 1,
   prompt = "#qixi_jieban-promot",
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     if #selected ~= 0 then return end
     local c = Fk:getCardById(to_select)
     return c.trueName == 'peach' or c.sub_type == Card.SubtypeArmor

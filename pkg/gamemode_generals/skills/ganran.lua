@@ -5,7 +5,7 @@ local ganran = fk.CreateSkill {
 
 Fk:loadTranslationTable{
   ["zombie_ganran"] = "感染",
-  [":zombie_ganran"] = "锁定技，你手牌中的装备牌视为【铁锁连环】。",
+  [":zombie_ganran"] = "锁定技，你手牌中的装备牌视为【铁索连环】。",
 }
 
 ganran:addEffect("filter", {

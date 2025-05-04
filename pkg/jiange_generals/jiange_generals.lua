@@ -69,7 +69,7 @@ local jiange__lingfeng = fk.CreateTriggerSkill{
 }
 local jiange__qinzhen = fk.CreateTargetModSkill{
   name = "jiange__qinzhen",
-  frequency = Skill.Compulsory,
+  
   residue_func = function(self, player, skill, scope)
     if skill.trueName == "slash_skill" and scope == Player.HistoryPhase then
       return #table.filter(Fk:currentRoom().alive_players, function (p)
@@ -102,7 +102,7 @@ zhugeliang.jiange_hero = true
 local jiange__biantian = fk.CreateTriggerSkill{
   name = "jiange__biantian",
   anim_type = "control",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function (self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Start
@@ -309,7 +309,7 @@ local jiange__zhinang = fk.CreateTriggerSkill{
 local jiange__jingmiao = fk.CreateTriggerSkill{
   name = "jiange__jingmiao",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.CardUseFinished},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self) and data.card.trueName == "nullification" and
@@ -347,7 +347,7 @@ pangtong.jiange_hero = true
 local jiange__yuhuo = fk.CreateTriggerSkill{
   name = "jiange__yuhuo",
   anim_type = "defensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.DamageInflicted},
   can_trigger = function(self, _, target, player, data)
     return target == player and player:hasSkill(self) and data.damageType == fk.FireDamage
@@ -438,7 +438,7 @@ guanyu.jiange_hero = true
 local jiange__xiaorui = fk.CreateTriggerSkill{
   name = "jiange__xiaorui",
   anim_type = "support",
-  frequency = Skill.Compulsory,
+  
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     if target and player:hasSkill(self) and data.card and data.card.trueName == "slash" and
@@ -458,7 +458,7 @@ local jiange__xiaorui = fk.CreateTriggerSkill{
 local jiange__huchen = fk.CreateTriggerSkill{
   name = "jiange__huchen",
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
+  
   events = {fk.DrawNCards},
   can_trigger = function (self, event, target, player, data)
     if target == player and player:hasSkill(self) then
@@ -481,7 +481,7 @@ local jiange__huchen = fk.CreateTriggerSkill{
 local jiange__tianjiang = fk.CreateTriggerSkill{
   name = "jiange__tianjiang",
   anim_type = "support",
-  frequency = Skill.Compulsory,
+  
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     if target and player:hasSkill(self) and data.card and data.card.trueName == "slash" and
@@ -527,7 +527,7 @@ zhaoyun.jiange_hero = true
 local jiange__fengjian = fk.CreateTriggerSkill{
   name = "jiange__fengjian",
   anim_type = "control",
-  frequency = Skill.Compulsory,
+  
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target and target == player and player:hasSkill(self) and not data.to.dead
@@ -590,7 +590,7 @@ local jiange__keding_active = fk.CreateActiveSkill{
   name = "jiange__keding_active",
   min_card_num = 1,
   min_target_num = 1,
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     return table.contains(Self:getCardIds("h"), to_select) and not Self:prohibitDiscard(to_select)
   end,
   target_filter = function (self, to_select, selected, selected_cards)
@@ -652,7 +652,7 @@ zhangfei.jiange_hero = true
 local jiange__mengwu = fk.CreateTriggerSkill{
   name = "jiange__mengwu",
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
+  
   events = {fk.CardEffectCancelledOut},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and data.card.trueName == "slash"
@@ -664,7 +664,7 @@ local jiange__mengwu = fk.CreateTriggerSkill{
 local jiange__mengwu_targetmod = fk.CreateTargetModSkill{
   name = "#jiange__mengwu_targetmod",
   main_skill = jiange__mengwu,
-  frequency = Skill.Compulsory,
+  
   bypass_times = function(self, player, skill, scope, card, to)
     return player:hasSkill(jiange__mengwu) and skill.trueName == "slash_skill"
   end,
@@ -675,7 +675,7 @@ local jiange__mengwu_targetmod = fk.CreateTargetModSkill{
 local jiange__hupo = fk.CreateFilterSkill{
   name = "jiange__hupo",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   card_filter = function(self, card, player)
     return player:hasSkill(self) and card.type == Card.TypeTrick and table.contains(player:getCardIds("h"), card.id)
   end,
@@ -686,7 +686,7 @@ local jiange__hupo = fk.CreateFilterSkill{
 local jiange__shuhun = fk.CreateTriggerSkill{
   name = "jiange__shuhun",
   anim_type = "support",
-  frequency = Skill.Compulsory,
+  
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and
@@ -731,7 +731,7 @@ caozhen.jiange_hero = true
 local jiange__chiying = fk.CreateTriggerSkill{
   name = "jiange__chiying",
   anim_type = "defensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.DamageInflicted},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self) and data.damage > 1 and table.contains(U.GetFriends(player.room, player), target)
@@ -745,7 +745,7 @@ local jiange__chiying = fk.CreateTriggerSkill{
 }
 local jiange__jingfan = fk.CreateDistanceSkill{
   name = "jiange__jingfan",
-  frequency = Skill.Compulsory,
+  
   correct_func = function(self, from, to)
     return -#table.filter(Fk:currentRoom().alive_players, function (p)
       return p:hasSkill(self) and
@@ -756,7 +756,7 @@ local jiange__jingfan = fk.CreateDistanceSkill{
 local jiange__zhenxi = fk.CreateTriggerSkill{
   name = "jiange__zhenxi",
   anim_type = "masochism",
-  frequency = Skill.Compulsory,
+  
   events = {fk.Damaged},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self) and table.contains(U.GetFriends(player.room, player), target)
@@ -836,7 +836,7 @@ local jiange__konghun = fk.CreateTriggerSkill{
 local jiange__fanshi = fk.CreateTriggerSkill{
   name = "jiange__fanshi",
   anim_type = "negative",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Finish
@@ -848,7 +848,7 @@ local jiange__fanshi = fk.CreateTriggerSkill{
 local jiange__xuanlei = fk.CreateTriggerSkill{
   name = "jiange__xuanlei",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Start and
@@ -1037,7 +1037,7 @@ local jiange__huodi = fk.CreateTriggerSkill{
 local jiange__jueji = fk.CreateTriggerSkill{
   name = "jiange__jueji",
   anim_type = "control",
-  frequency = Skill.Compulsory,
+  
   events = {fk.DrawNCards},
   can_trigger = function (self, event, target, player, data)
     return player:hasSkill(self) and table.contains(U.GetEnemies(player.room, player), target) and target:isWounded() and data.n > 0
@@ -1075,7 +1075,7 @@ local jiange__jiaoxie = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected)
+  target_filter = function(self, player, to_select, selected)
     local target = Fk:currentRoom():getPlayerById(to_select)
     return #selected < 2 and table.contains(U.GetEnemies(Fk:currentRoom(), Self), target) and
       Fk.generals[target.general].jiange_machine and not target:isNude()
@@ -1096,7 +1096,7 @@ local jiange__jiaoxie = fk.CreateActiveSkill{
 local jiange__shuailing = fk.CreateTriggerSkill{
   name = "jiange__shuailing",
   anim_type = "support",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self) and target.phase == Player.Draw and table.contains(U.GetFriends(player.room, player), target)
@@ -1175,7 +1175,7 @@ local jiange__danjing = fk.CreateTriggerSkill{
 }
 local jiange__tongjun = fk.CreateAttackRangeSkill{
   name = "jiange__tongjun",
-  frequency = Skill.Compulsory,
+  
   correct_func = function (self, from, to)
     return #table.filter(Fk:currentRoom().alive_players, function (p)
       return p:hasSkill(self) and Fk.generals[from.general].jiange_machine and
@@ -1264,7 +1264,7 @@ local jiange__yingji_delay = fk.CreateTriggerSkill{
 local jiange__zhene = fk.CreateTriggerSkill{
   name = "jiange__zhene",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Play and
@@ -1323,7 +1323,7 @@ qinglong.jiange_machine = true
 local jiange__mojian = fk.CreateTriggerSkill{
   name = "jiange__mojian",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function (self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Play and
@@ -1344,7 +1344,7 @@ local jiange__mojian = fk.CreateTriggerSkill{
 }
 local jiange__jiguan = fk.CreateProhibitSkill{
   name = "jiange__jiguan",
-  frequency = Skill.Compulsory,
+  
   is_prohibited = function(self, from, to, card)
     return to:hasSkill(self) and card and card.name == "indulgence"
   end,
@@ -1366,7 +1366,7 @@ baihu.hidden = true
 baihu.jiange_machine = true
 local jiange__zhenwei = fk.CreateDistanceSkill{
   name = "jiange__zhenwei",
-  frequency = Skill.Compulsory,
+  
   correct_func = function(self, from, to)
     return #table.filter(Fk:currentRoom().alive_players, function (p)
       return p:hasSkill(self) and
@@ -1587,7 +1587,7 @@ chiwen.jiange_machine = true
 local jiange__tanshi = fk.CreateTriggerSkill{
   name = "jiange__tanshi",
   anim_type = "negative",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Finish and not player:isKongcheng()
@@ -1599,7 +1599,7 @@ local jiange__tanshi = fk.CreateTriggerSkill{
 local jiange__tunshi = fk.CreateTriggerSkill{
   name = "jiange__tunshi",
   anim_type = "offensive",
-  frequency = Skill.Compulsory,
+  
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Start and

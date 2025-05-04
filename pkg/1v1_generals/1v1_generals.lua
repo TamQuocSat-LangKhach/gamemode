@@ -44,7 +44,6 @@ local v11__xiechan = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 0,
   prompt = "#v11__xiechan",
-  frequency = Skill.Limited,
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and player:canPindian(player.next)
   end,
@@ -172,10 +171,10 @@ local qixi = fk.CreateViewAsSkill{
   anim_type = "control",
   pattern = "dismantlement",
   prompt = "#v11__qixi",
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).color == Card.Black
   end,
-  view_as = function(self, cards)
+  view_as = function(self, player, cards)
     if #cards ~= 1 then return nil end
     local c = Fk:cloneCard("v11__dismantlement")
     c.skillName = self.name
@@ -331,7 +330,6 @@ diaochan:addSkill("biyue")
 local v11__pianyi = fk.CreateTriggerSkill{
   name = "v11__pianyi",
   anim_type = "control",
-  frequency = Skill.Compulsory,
   events = {"fk.Debut"},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.room.current ~= player
@@ -414,7 +412,6 @@ local v11__niujin = General(extension, "v11__niujin", "wei", 4)
 local v11__cuorui = fk.CreateTriggerSkill{
   name = "v11__cuorui",
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
   events = {"fk.Debut", fk.EventPhaseChanging},
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) then
@@ -497,7 +494,7 @@ local v11__changjun = fk.CreateViewAsSkill{
       return Fk:getCardById(id).suit == Fk:getCardById(to_select).suit
     end)
   end,
-  view_as = function(self, cards)
+  view_as = function(self, player, cards)
     if not self.interaction.data or #cards ~= 1 then return end
     local card = Fk:cloneCard(self.interaction.data)
     card:addSubcard(cards[1])

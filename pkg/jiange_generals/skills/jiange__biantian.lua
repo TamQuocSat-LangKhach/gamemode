@@ -1,16 +1,15 @@
 local jiange__biantian = fk.CreateSkill {
-  name = "jiange__biantian"
+  name = "jiange__biantian",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['jiange__biantian'] = '变天',
-  ['#jiange__biantian_delay'] = '变天',
-  [':jiange__biantian'] = '锁定技，准备阶段，你进行一次判定，若结果为：<br>红色，所有敌方进入狂风状态（若天侯孔明在场，受到火焰伤害+1），直到你下回合开始；<br>♠，所有友方进入大雾状态（若天侯孔明在场，受到非雷电伤害时，防止此伤害），直到你下回合开始。',
+  ["jiange__biantian"] = "变天",
+  [":jiange__biantian"] = "锁定技，准备阶段，你进行一次判定，若结果为：<br>红色，所有敌方进入狂风状态（若天侯孔明在场，受到火焰伤害+1），直到你下回合开始；<br>♠，所有友方进入大雾状态（若天侯孔明在场，受到非雷电伤害时，防止此伤害），直到你下回合开始。",
 }
 
 jiange__biantian:addEffect(fk.EventPhaseStart, {
   anim_type = "control",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__biantian) and player.phase == Player.Start
   end,

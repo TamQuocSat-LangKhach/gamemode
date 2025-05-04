@@ -20,11 +20,11 @@ extension:addGameMode(require "packages/gamemode/pkg/gamemodes/variation")
 --extension:addGameMode(require "packages/gamemode/pkg/gamemodes/kangqin")
 --extension:addGameMode(require "packages/gamemode/pkg/gamemodes/jiange")
 
---local chaos_mode_cards = require "packages/gamemode/pkg/chaos_mode_cards"
+local chaos_mode_cards = require "packages/gamemode/pkg/chaos_mode_cards"
 local espionage_cards = require "packages/gamemode/pkg/espionage_cards"
---local vanished_dragon_cards = require "packages/gamemode/pkg/vanished_dragon_cards"
+local vanished_dragon_cards = require "packages/gamemode/pkg/vanished_dragon_cards"
 local variation_cards = require "packages/gamemode/pkg/variation_cards"
---local v33_cards = require "packages/gamemode/pkg/3v3_cards"
+local v33_cards = require "packages/gamemode/pkg/3v3_cards"
 local v11_cards = require "packages/gamemode/pkg/1v1_cards"
 
 local gamemode_generals = require "packages/gamemode/pkg/gamemode_generals"
@@ -38,11 +38,11 @@ Fk:loadTranslationTable(require 'packages/gamemode/i18n/en_US', 'en_US')
 return {
   extension,
 
-  --chaos_mode_cards,
+  chaos_mode_cards,
   espionage_cards,
-  --vanished_dragon_cards,
+  vanished_dragon_cards,
   variation_cards,
-  --v33_cards,
+  v33_cards,
   v11_cards,
 
   gamemode_generals,

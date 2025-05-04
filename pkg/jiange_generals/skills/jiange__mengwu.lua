@@ -1,5 +1,6 @@
 local jiange__mengwu = fk.CreateSkill {
-  name = "jiange__mengwu"
+  name = "jiange__mengwu",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -10,7 +11,6 @@ Fk:loadTranslationTable{
 -- 添加触发效果
 jiange__mengwu:addEffect(fk.CardEffectCancelledOut, {
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__mengwu) and data.card.trueName == "slash"
   end,
@@ -21,8 +21,6 @@ jiange__mengwu:addEffect(fk.CardEffectCancelledOut, {
 
 -- 添加目标修正效果
 jiange__mengwu:addEffect('targetmod', {
-  main_skill = jiange__mengwu,
-  frequency = Skill.Compulsory,
   bypass_times = function(self, player, skill, scope, card, to)
     return player:hasSkill(jiange__mengwu) and skill.trueName == "slash_skill"
   end,

@@ -1,15 +1,15 @@
 local jiange__huchen = fk.CreateSkill {
-  name = "jiange__huchen"
+  name = "jiange__huchen",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['jiange__huchen'] = '虎臣',
-  [':jiange__huchen'] = '锁定技，摸牌阶段，你额外摸X张牌（X为你杀死的敌方角色数）。',
+  ["jiange__huchen"] = "虎臣",
+  [":jiange__huchen"] = "锁定技，摸牌阶段，你额外摸X张牌（X为你杀死的敌方角色数）。",
 }
 
 jiange__huchen:addEffect(fk.DrawNCards, {
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(jiange__huchen.name) then
       local room = player.room

@@ -1,15 +1,15 @@
 local jiange__xiaorui = fk.CreateSkill {
-  name = "jiange__xiaorui"
+  name = "jiange__xiaorui",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['jiange__xiaorui'] = '骁锐',
-  [':jiange__xiaorui'] = '锁定技，当友方角色于其回合内使用【杀】造成伤害后，你令其本回合出牌阶段使用【杀】次数上限+1。',
+  ["jiange__xiaorui"] = "骁锐",
+  [":jiange__xiaorui"] = "锁定技，当友方角色于其回合内使用【杀】造成伤害后，你令其本回合出牌阶段使用【杀】次数上限+1。",
 }
 
 jiange__xiaorui:addEffect(fk.Damage, {
   anim_type = "support",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
     if target and player:hasSkill(jiange__xiaorui.name) and data.card and data.card.trueName == "slash" and
       table.contains(U.GetFriends(player.room, player), target) then

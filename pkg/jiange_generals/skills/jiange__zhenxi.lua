@@ -1,16 +1,16 @@
 local jiange__zhenxi = fk.CreateSkill {
-  name = "jiange__zhenxi"
+  name = "jiange__zhenxi",
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
-  ['jiange__zhenxi'] = '镇西',
-  ['@jiange__zhenxi'] = '镇西',
-  [':jiange__zhenxi'] = '锁定技，当友方角色受到伤害后，其下个摸牌阶段摸牌数+1。',
+  ["jiange__zhenxi"] = "镇西",
+  ["@jiange__zhenxi"] = "镇西",
+  [":jiange__zhenxi"] = "锁定技，当友方角色受到伤害后，其下个摸牌阶段摸牌数+1。",
 }
 
 jiange__zhenxi:addEffect(fk.Damaged, {
   anim_type = "masochism",
-  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player)
     return player:hasSkill(jiange__zhenxi.name) and table.contains(U.GetFriends(player.room, player), target)
   end,

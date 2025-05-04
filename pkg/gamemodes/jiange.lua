@@ -574,13 +574,13 @@ local jiange__jixi = fk.CreateViewAsSkill{
   anim_type = "control",
   pattern = "snatch",
   prompt = "#jiange__jixi",
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeTrick
   end,
   before_use = function (self, player)
     player:broadcastSkillInvoke("jixi")
   end,
-  view_as = function(self, cards)
+  view_as = function(self, player, cards)
     if #cards ~= 1 then return end
     local card = Fk:cloneCard("snatch")
     card.skillName = self.name
@@ -659,7 +659,7 @@ local jiange__yushen = fk.CreateActiveSkill{
     return player:getMark("jiange__yushen_yushen1-phase") == 0 or player:getMark("jiange__yushen_yushen2-phase") == 0
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected)
+  target_filter = function(self, player, to_select, selected)
     if #selected == 0 and to_select ~= Self.id and Self:getMark("jiange__yushen_"..self.interaction.data.."-phase") == 0 then
       local target = Fk:currentRoom():getPlayerById(to_select)
       if target:isWounded() then

@@ -43,7 +43,7 @@ local recastSkill = fk.CreateActiveSkill{
   name = "1v3_recast_weapon&",
   anim_type = "drawcard",
   card_num = 1,
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, player, to_select, selected)
     return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon and
       Fk:currentRoom():getCardArea(to_select) == Card.PlayerHand and
       not Self:prohibitDiscard(Fk:getCardById(to_select))

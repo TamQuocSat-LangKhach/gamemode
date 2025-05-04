@@ -245,7 +245,7 @@ return {
   ["zombie_zaibian"] = "灾变",
   [":zombie_zaibian"] = "锁定技，摸牌阶段，若人类玩家数-僵尸玩家数+1大于0，则你多摸该数目的牌。",
   ["zombie_ganran"] = "感染",
-  [":zombie_ganran"] = "锁定技，你手牌中的装备牌视为【铁锁连环】。",
+  [":zombie_ganran"] = "锁定技，你手牌中的装备牌视为【铁索连环】。",
   ["zombie_mode"] = "僵尸模式",
   [":zombie_mode"] = desc_zombie,
   ["@zombie_tuizhi"] = "退治",
