@@ -70,9 +70,9 @@ local vanished_dragon_getLogic = function()
 
   function vanished_dragon_logic:initialize(room)
     GameLogic.initialize(self, room)
-    self.role_table = {nil, nil, nil, nil, nil, 
+    self.role_table = {nil, nil, nil, nil, nil,
     {"lord", "loyalist", "rebel", "rebel", "rebel", "renegade"},
-    {"lord", "loyalist", "loyalist", "rebel", "rebel", "rebel", "renegade"}, 
+    {"lord", "loyalist", "loyalist", "rebel", "rebel", "rebel", "renegade"},
     {"lord", "loyalist", "loyalist", "rebel", "rebel", "rebel", "rebel", "renegade"} }
   end
 
@@ -83,14 +83,14 @@ local vanished_dragon_getLogic = function()
     local roles = self.role_table[n]
     table.shuffle(roles)
 
-    room:setTag("ShownLoyalist", nil)
+    room:setBanner("ShownLoyalist", nil)
     for i = 1, n do
       local p = players[i]
       p.role = roles[i]
       room:broadcastProperty(p, "role")
-      if p.role == "loyalist" and not room:getTag("ShownLoyalist") then
+      if p.role == "loyalist" and not room:getBanner("ShownLoyalist") then
         room:setPlayerProperty(p, "role_shown", true)
-        room:setTag("ShownLoyalist", p.id)
+        room:setBanner("ShownLoyalist", p.id)
       end
     end
   end
@@ -99,9 +99,9 @@ local vanished_dragon_getLogic = function()
     local player_circle = {}
     local players = self.room.players
     local p = 1
-  
+
     for i = 1, #players do
-      if players[i].id == self.room:getTag("ShownLoyalist") then
+      if players[i].id == self.room:getBanner("ShownLoyalist") then
         p = i
         break
       end
@@ -112,7 +112,7 @@ local vanished_dragon_getLogic = function()
     for j = 1, p - 1 do
       table.insert(player_circle, players[j])
     end
-  
+
     self.room:arrangeSeats(player_circle)
   end
 
@@ -120,8 +120,11 @@ local vanished_dragon_getLogic = function()
     local room = self.room---@type Room
 
     local generals_blacklist = {
-      "vd__cuiyan", "vd__huangfusong", -- 明忠备选
-      "js__caocao", "js__zhugeliang", "ol__dongzhao","std__yuanshu", "huanghao", -- 暴露暗主
+      -- 明忠备选
+      "vd__cuiyan", "vd__huangfusong",
+      -- 暴露暗主
+      "js__caocao", "js__zhugeliang", "ol__dongzhao", "std__yuanshu", "huanghao", "mou__guanyu", "godlusu",
+      "mobile__yuanshu", "m_ex__yuanshu", "guandu__xuyou",
     }
     local loyalist_list = {}
     for i = #room.general_pile, 1, -1 do
@@ -137,21 +140,28 @@ local vanished_dragon_getLogic = function()
     local generalNum = room.settings.generalNum
     local n = room.settings.enableDeputy and 2 or 1
     local lord = room.players[1] -- room:getLord()
-    if lord.id == room:getTag("ShownLoyalist") then
+    if lord.id == room:getBanner("ShownLoyalist") then
       for _, p in ipairs(room.players) do
-        if p.id == room:getTag("ShownLoyalist") then
+        if p.id == room:getBanner("ShownLoyalist") then
           lord = p
           break
         end
       end
     end
-    room:setCurrent(lord)
 
-    room:sendLog{type = "#VDIntro", arg = lord._splayer:getScreenName(), toast = true}
+    room:sendLog{
+      type = "#VDIntro",
+      arg = lord._splayer:getScreenName(),
+      toast = true,
+    }
 
     if lord ~= nil then
+      room:setCurrent(lord)
       table.insertTable(loyalist_list, table.random(room.general_pile, generalNum))
-      local lord_generals = room:askForGeneral(lord, loyalist_list, n)
+      local lord_generals = room:askToChooseGeneral(lord, {
+        generals = loyalist_list,
+        n = n,
+      })
       local lord_general, deputy
       if type(lord_generals) == "table" then
         deputy = lord_generals[2]
@@ -165,7 +175,7 @@ local vanished_dragon_getLogic = function()
       end
 
       room:prepareGeneral(lord, lord_general, deputy, true)
-      room:askForChooseKingdom({lord})
+      room:askToChooseKingdom({lord})
 
       -- 显示技能
       local canAttachSkill = function(player, skillName)
@@ -174,7 +184,7 @@ local vanished_dragon_getLogic = function()
           fk.qCritical("Skill: "..skillName.." doesn't exist!")
           return false
         end
-        if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
+        if skill:hasTag(Skill.AttachedKingdom) and not table.contains(skill:getSkeleton().attached_kingdom, player.kingdom) then
           return false
         end
         return true
@@ -196,11 +206,10 @@ local vanished_dragon_getLogic = function()
         end
       end
       local lord_maxhp = deputyGeneral and (lord_gs.maxHp + deputyGeneral.maxHp) // 2 or lord_gs.maxHp
-      table.insert(lord_skills, (lord_maxhp <= 3 and lord_gs.gender == General.Male) and "vd_dongcha" or "vd_sheshen")
+      table.insert(lord_skills, (lord_maxhp <= 3 and lord_gs.gender == General.Male) and "vd_dongcha&" or "vd_sheshen&")
       for _, skill in ipairs(lord_skills) do
         room:doBroadcastNotify("AddSkill", json.encode{ lord.id, skill })
       end
-
     end
 
     local nonlord = room:getOtherPlayers(lord, true)
@@ -221,23 +230,22 @@ local vanished_dragon_getLogic = function()
       room:prepareGeneral(p, general, deputy)
     end
 
-    room:askForChooseKingdom(nonlord)
-
+    room:askToChooseKingdom(nonlord)
   end
 
 
   function vanished_dragon_logic:attachSkillToPlayers()
     local room = self.room
     local players = room.players
-    local lord = room:getTag("ShownLoyalist")
+    local lord = room:getBanner("ShownLoyalist")
 
     local addRoleModSkills = function(player, skillName)
       local skill = Fk.skills[skillName]
-      if skill.lordSkill then
+      if skill:hasTag(Skill.Lord) then
         return
       end
 
-      if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
+      if skill:hasTag(Skill.AttachedKingdom) and not table.contains(skill:getSkeleton().attached_kingdom, player.kingdom) then
         return
       end
 
@@ -264,67 +272,41 @@ local vanished_dragon_getLogic = function()
       end
 
       if p.id == lord then
-        local skill = (p.maxHp <= 4 and p:isMale()) and "vd_dongcha" or "vd_sheshen"
-        room:sendLog{type = "#VDLoyalistSkill", from = p.id, arg = skill, toast = true}
+        local skill = (p.maxHp <= 4 and p:isMale()) and "vd_dongcha&" or "vd_sheshen&"
+        room:sendLog{
+          type = "#VDLoyalistSkill",
+          from = p.id,
+          arg = skill,
+          toast = true,
+        }
         room:handleAddLoseSkills(p, skill, nil, false)
       end
     end
+    room:addSkill(Fk.skills["#vanished_dragon_rule&"])
   end
 
   return vanished_dragon_logic
 end
-
-
-local vanished_dragon_rule = fk.CreateTriggerSkill{
-  name = "#vanished_dragon_rule",
-  priority = 0.1,
-  mute = true,
-  events = {fk.BuryVictim},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player.rest == 0 and player.id == player.room:getTag("ShownLoyalist")
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local lord = room:getLord()
-    if not lord then return end
-    room:setPlayerProperty(lord, "role_shown", true)
-    -- room:broadcastProperty(lord, "role")
-    room:sendLog{type = "#VDLordExploded", from = lord.id, toast = true}
-
-    local skills = Fk.generals[lord.general]:getSkillNameList(true)
-    local deputy = Fk.generals[lord.deputyGeneral]
-    if deputy then
-      table.insertTableIfNeed(skills, deputy:getSkillNameList(true))
-    end
-    for _, sname in ipairs(skills) do
-      if Fk.skills[sname].lordSkill then
-        room:handleAddLoseSkills(lord, sname, nil, false)
-      end
-    end
-  end,
-}
-Fk:addSkill(vanished_dragon_rule)
 
 local vanished_dragon = fk.CreateGameMode{
   name = "vanished_dragon",
   minPlayer = 6,
   maxPlayer = 8,
   main_mode = "role_mode",
-  rule = vanished_dragon_rule,
+  --rule = Fk.skills["#vanished_dragon_rule&"] --[[@as TriggerSkill]]
   logic = vanished_dragon_getLogic,
   surrender_func = function(self, playedTime)
     return Fk.game_modes["aaa_role_mode"].surrenderFunc(self, playedTime)
   end,
   get_adjusted = function (self, player)
-    if player.room:getTag("ShownLoyalist") == player.id then
+    if player.room:getBanner("ShownLoyalist") == player.id then
       return {hp = player.hp + 1, maxHp = player.maxHp + 1}
     end
     return {}
   end,
   reward_punish = function (self, victim, killer)
     if not killer or killer.dead then return end
-    local shownLoyalist = victim.room:getTag("ShownLoyalist")
+    local shownLoyalist = victim.room:getBanner("ShownLoyalist")
     if victim.role == "loyalist" and ((killer.role == "lord" and killer.role_shown) or killer.id == shownLoyalist) then
       killer:throwAllCards("he")
     elseif victim.role == "rebel" or victim.id == shownLoyalist then
@@ -333,8 +315,14 @@ local vanished_dragon = fk.CreateGameMode{
   end,
   build_draw_pile = function(self)
     local draw, void = GameMode.buildDrawPile(self)
-    local blacklist = {"snatch", "supply_shortage", "ex_nihilo", "amazing_grace", "collateral", "nullification", "lightning", "eight_diagram", "qinggang_sword", "blade"}
-    local whitelist = {"diversion", "paranoid", "reinforcement", "abandoning_armor", "crafty_escape", "floating_thunder", "glittery_armor", "seven_stars_sword", "steel_lance"}
+    local blacklist = {
+      "snatch", "supply_shortage", "ex_nihilo", "amazing_grace", "collateral", "nullification",
+      "lightning", "eight_diagram", "qinggang_sword", "blade"
+    }
+    local whitelist = {
+      "diversion", "paranoid", "reinforcement", "abandoning_armor", "crafty_escape",
+      "floating_thunder", "glittery_armor", "seven_stars_sword", "steel_lance"
+    }
 
     for i = #void, 1, -1 do
       local id = void[i]
@@ -360,108 +348,11 @@ local vanished_dragon = fk.CreateGameMode{
   end
 }
 
-
--- 洞察：游戏开始时，随机一名反贼的身份对你可见。准备阶段开始时，你可以弃置场上的一张牌。
-local vd_dongcha = fk.CreateTriggerSkill{
-  name = "vd_dongcha",
-  anim_type = "control",
-  events = {fk.GameStart, fk.EventPhaseStart},
-  can_trigger = function(self, event, target, player, data)
-    if player:hasSkill(self) then
-      if event == fk.GameStart then return true end
-      return target == player and player.phase == Player.Start and table.find(player.room.alive_players, function(p)
-        return #p:getCardIds("ej") > 0
-      end)
-    end
-  end,
-  on_cost = function(self, event, target, player, data)
-    if event == fk.EventPhaseStart then
-      local room = player.room
-      local targets = table.map(table.filter(room.alive_players, function(p) return #p:getCardIds("ej") > 0 end), Util.IdMapper)
-      local tos = room:askForChoosePlayers(player, targets, 1, 1, "#vd_dongcha-ask", self.name, true)
-      if #tos > 0 then
-        self.cost_data = {tos = tos}
-        return true
-      end
-    else
-      self.cost_data = nil
-      return true
-    end
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.GameStart then
-      local targets = table.filter(room.alive_players, function(p) return p.role == "rebel" end)
-      if #targets > 0 then
-        room:addTableMark(player, "vd_dongcha", table.random(targets).id)
-      end
-      room:sendLog{type = "#VDDongcha", from = player.id, toast = true}
-    else
-      local to = room:getPlayerById(self.cost_data.tos[1])
-      local card = room:askForCardChosen(player, to, "ej", self.name)
-      room:throwCard({card}, self.name, to, player)
-    end
-  end,
-}
-
-local vd_dongcha_visible = fk.CreateVisibilitySkill{
-  name = "#vd_dongcha_visible",
-  role_visible = function (self, player, target)
-    if table.contains(player:getTableMark("vd_dongcha"), target.id) then
-      return true
-    end
-  end,
-}
-vd_dongcha:addRelatedSkill(vd_dongcha_visible)
-
-Fk:addSkill(vd_dongcha)
-
--- 舍身：锁定技，主公处于濒死状态即将死亡时，你令其体力上限+1，回复体力至X点（X为你的体力值），获得你所有牌，然后你死亡。
-local vd_sheshen = fk.CreateTriggerSkill{
-  name = "vd_sheshen",
-  anim_type = "big",
-  events = {fk.AskForPeachesDone},
-  frequency = Skill.Compulsory,
-  can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and target.role == "lord" and target.hp <= 0 and target.dying
-    and not data.ignoreDeath and player:usedSkillTimes(self.name, Player.HistoryGame) == 0
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    room:changeMaxHp(target, 1)
-    room:recover({
-      who = target,
-      num = player.hp - target.hp,
-      recoverBy = player,
-      skillName = self.name,
-    })
-    local cards = player:getCardIds{Player.Hand, Player.Equip}
-    if #cards > 0 then
-      room:obtainCard(target, cards, false, fk.ReasonPrey, player.id)
-    end
-    if not player.dead then
-      room:killPlayer({who = player.id})
-    end
-  end,
-}
-Fk:addSkill(vd_sheshen)
-
 Fk:loadTranslationTable{
   ["vanished_dragon"] = "忠胆英杰",
   [":vanished_dragon"] = desc_vanished_dragon,
   ["#VDIntro"] = "<b>%arg</b> 是 <b>明忠</b>，<b>开始选将</b><br>明忠是代替主公亮出身份牌的忠臣，明忠死后主公再翻出身份牌",
   ["#VDLoyalistSkill"] = "明忠 %from 获得忠臣技：%arg",
-  ["#VDDongcha"] = "明忠 %from 发动了〖洞察〗，一名反贼的身份已被其知晓",
-  ["#VDLordExploded"] = "明忠阵亡，主公暴露：%from",
-
-  ["vd_dongcha"] = "洞察",
-  [":vd_dongcha"] = "游戏开始时，随机一名反贼的身份对你可见。准备阶段开始时，你可以弃置场上的一张牌。",
-  ["vd_sheshen"] = "舍身",
-  [":vd_sheshen"] = "锁定技，主公处于濒死状态即将死亡时，你令其体力上限+1，回复体力至X点（X为你的体力值），获得你所有牌，然后你死亡。",
-  ["$vd_sheshen1"] = "舍身为主，死而无憾！",
-  ["$vd_sheshen2"] = "捐躯赴国难，视死忽如归。",
-
-  ["#vd_dongcha-ask"] = "洞察：你可以选择一名角色，弃置其场上一张牌",
 }
 
 return vanished_dragon

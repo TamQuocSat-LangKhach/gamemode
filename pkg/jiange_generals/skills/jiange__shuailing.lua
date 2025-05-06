@@ -8,10 +8,10 @@ Fk:loadTranslationTable{
 }
 
 jiange__shuailing:addEffect(fk.EventPhaseStart, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return player:hasSkill(jiange__shuailing) and target.phase == Player.Draw and table.contains(U.GetFriends(player.room, player), target)
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:doIndicate(player.id, {target.id})
     local judge = {

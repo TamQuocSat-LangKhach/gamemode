@@ -12,7 +12,7 @@ Fk:loadTranslationTable{
 
 jiange__gongshen:addEffect(fk.EventPhaseStart, {
   mute = true,
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__gongshen.name) and player.phase == Player.Finish and
       (table.find(U.GetEnemies(player.room, player), function(p)
         return Fk.generals[p.general].jiange_machine
@@ -21,7 +21,7 @@ jiange__gongshen:addEffect(fk.EventPhaseStart, {
         return Fk.generals[p.general].jiange_machine and p:isWounded()
       end))
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     local room = player.room
     local choices = {}
     if table.find(U.GetFriends(room, player), function(p)
@@ -47,7 +47,7 @@ jiange__gongshen:addEffect(fk.EventPhaseStart, {
       return true
     end
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     player:broadcastSkillInvoke(jiange__gongshen.name)
     if event:getCostData(skill) == "1" then

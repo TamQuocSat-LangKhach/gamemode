@@ -151,7 +151,7 @@ local m_1v1_mode = fk.CreateGameMode{
   name = "m_1v1_mode",
   minPlayer = 2,
   maxPlayer = 2,
-  --rule = Fk.skills["#m_1v1_rule&"] --[[@as TriggerSkill]],
+  rule = Fk.skills["#m_1v1_rule&"] --[[@as TriggerSkill]],
   logic = m_1v1_getLogic,
   surrender_func = function(self, playedTime)
     return { { text = "time limitation: 2 min", passed = playedTime >= 120 } }

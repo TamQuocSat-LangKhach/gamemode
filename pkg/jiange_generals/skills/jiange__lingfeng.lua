@@ -10,10 +10,10 @@ Fk:loadTranslationTable{
 
 jiange__lingfeng:addEffect(fk.EventPhaseStart, {
   anim_type = "offensive",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__lingfeng.name) and player.phase == Player.Draw
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     local cards = room:getNCards(2)
     room:moveCardTo(cards, Card.Processing, nil, fk.ReasonJustMove, jiange__lingfeng.name, nil, true, player.id)

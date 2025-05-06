@@ -8,6 +8,8 @@ Fk:loadTranslationTable{
   [":zhanshen"] = "觉醒技，准备阶段，若你已受伤且己方有角色已死亡，你减1点体力上限，获得技能〖马术〗和〖神戟〗。",
 }
 
+local U = require "packages/utility/utility"
+
 zhanshen:addEffect(fk.EventPhaseStart, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(zhanshen.name) and
@@ -23,7 +25,7 @@ zhanshen:addEffect(fk.EventPhaseStart, {
     local room = player.room
     room:changeMaxHp(player, -1)
     if not player.dead then
-      room:handleAddLoseSkills(player, "mashu|shenji", nil)
+      room:handleAddLoseSkills(player, "mashu|shenji")
     end
   end,
 })

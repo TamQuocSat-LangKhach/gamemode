@@ -9,14 +9,14 @@ Fk:loadTranslationTable{
 }
 
 jiange__huodi:addEffect(fk.EventPhaseStart, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__huodi.name) and player.phase == Player.Finish and
       table.find(U.GetFriends(player.room, player), function (p)
         return not p.faceup
       end) and
       #U.GetEnemies(player.room, player) > 0
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     local to = player.room:askToChoosePlayers(player, {
       targets = table.map(U.GetEnemies(player.room, player), Util.IdMapper),
       min_num = 1,
@@ -29,7 +29,7 @@ jiange__huodi:addEffect(fk.EventPhaseStart, {
       return true
     end
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     player.room:getPlayerById(event:getCostData(skill)):turnOver()
   end,
 })

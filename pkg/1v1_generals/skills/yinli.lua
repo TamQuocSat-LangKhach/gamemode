@@ -28,7 +28,7 @@ yinli:addEffect(fk.AfterCardsMove, {
           end
         end
       end
-      ids = U.moveCardsHoldingAreaCheck(room, ids)
+      ids = player.room.logic:moveCardsHoldingAreaCheck(ids)
       if #ids > 0 then
         event:setCostData(self, ids)
         return true

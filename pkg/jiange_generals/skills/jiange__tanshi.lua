@@ -8,10 +8,10 @@ Fk:loadTranslationTable{
 }
 
 jiange__tanshi:addEffect(fk.EventPhaseStart, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(skill.name) and player.phase == Player.Finish and not player:isKongcheng()
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     player.room:askToDiscard(player, {
       min_num = 1,
       max_num = 1,

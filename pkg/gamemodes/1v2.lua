@@ -70,7 +70,6 @@ local m_1v2_getLogic = function()
     for _, p in ipairs(players) do
       room:broadcastProperty(p, "general")
     end
-    room:setTag("SkipNormalDeathProcess", true)
   end
 
 

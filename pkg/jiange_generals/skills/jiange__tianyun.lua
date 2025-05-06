@@ -10,16 +10,16 @@ Fk:loadTranslationTable{
 }
 
 jiange__tianyun:addEffect(fk.EventPhaseStart, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__tianyun.name) and player.phase == Player.Finish
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
       skill_name = jiange__tianyun.name,
       prompt = "#jiange__tianyun-invoke"
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:loseHp(player, 1, jiange__tianyun.name)
     if player.dead or #U.GetEnemies(room, player) == 0 then return end

@@ -33,15 +33,14 @@ local zombie_desc = [=====[
 
   ___
 
-  ## 专属副将：僵尸
+  ## 专属武将：僵尸
 
   成为僵尸的玩家，其副将会变成“僵尸”。僵尸具有以下技能：
 
-  - **咆哮**：锁定技：①你使用杀无次数限制；②你的回合内，你使用【杀】被闪避时，你获得一枚“咆”；③当你于回合内使用【杀】造成伤害时，若你有“咆”，你弃置所有“咆”令此【杀】伤害+X(X为你弃置的“咆”数量)；④回合结束后，你失去所有“咆”。
-  - **完杀**：锁定技，①除进行濒死流程的角色以外的其他角色于你的回合内不能使用【桃】。②在一名角色于你的回合内进行的濒死流程中，除其以外的其他角色的不带“锁定技”标签的技能无效。
+  - **咆哮**：锁定技，出牌阶段，你使用【杀】无次数限制。
+  - **完杀**：锁定技，除进行濒死流程的角色以外的其他角色于你的回合内不能使用【桃】。
   - **迅猛**：锁定技，你的【杀】造成伤害时，令此伤害+1，若此时你的体力值大于1，则你失去1点体力。
-  - **灾变**：锁定技，你的出牌阶段开始时，
-  若人类玩家数-僵尸玩家数+1大于0，则你摸取该数目的牌。
+  - **灾变**：锁定技，出牌阶段开始时，若人类玩家数-僵尸玩家数+1大于0，则你摸取该数目的牌。
   - **感染**：锁定技，你手牌中的装备牌视为【铁索连环】。
 
   ___
@@ -90,183 +89,27 @@ local zombie_getLogic = function()
       room:setPlayerProperty(p, "role_shown", true)
       room:broadcastProperty(p, "role")
     end
+    room:setTag("SkipNormalDeathProcess", true)
+    room:addSkill("#zombie_rule&")
   end
 
   return zombie_logic
 end
-
-local human_role = { "lord", "loyalist" }
-local zombie_role = { "rebel", "renegade" }
-
-local function zombify(victim, role, maxHp)
-  local room = victim.room
-  local gender = victim.gender
-  local kingdom = victim.kingdom
-  room:changeHero(victim, "zombie", false, true)
-  victim.role = role
-  victim.maxHp = math.ceil(maxHp / 2)
-  room:revivePlayer(victim, true)
-  room:broadcastProperty(victim, "role")
-  room:broadcastProperty(victim, "maxHp")
-  room:setPlayerProperty(victim, "kingdom", kingdom)
-  room:setPlayerProperty(victim, "gender", gender)
-  room:broadcastPlaySound("./packages/gamemode/audio/zombify-" ..
-    (gender == General.Male and "male" or "female"))
-end
-
-local zombie_rule = fk.CreateTriggerSkill{
-  name = "#zombie_rule",
-  priority = 0.001,
-  events = {
-    fk.GameStart, fk.EventPhaseStart, fk.RoundStart, fk.TurnStart,
-    fk.GameOverJudge, fk.BuryVictim, fk.Deathed
-  },
-  can_trigger = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.GameStart then return player.role == "lord" end
-    if target ~= player then return end
-    if event == fk.EventPhaseStart then
-      return player.role == "lord" and player.phase == Player.Start
-    elseif event == fk.TurnStart then
-      return player:getMark("zombie_mustdie") ~= 0
-    end
-    return true
-  end,
-  on_trigger = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.GameStart then
-      room:setTag("SkipNormalDeathProcess", true)
-    elseif event == fk.RoundStart then
-      local count = room:getBanner("RoundCount")
-      if count == 2 then
-        local loyalist = table.filter(room.alive_players, function(p) return p.role == "loyalist" end)
-        local zombie = table.random(loyalist, 2)
-        for _, p in ipairs(zombie) do
-          room:addPlayerMark(p, "zombie_mustdie", 1)
-        end
-      elseif count > 2 then
-        local haszombie = table.find(room.players, function(p)
-          return table.contains(zombie_role, p.role)
-        end)
-        local haslivezombie = table.find(room.alive_players, function(p)
-          return table.contains(zombie_role, p.role)
-        end)
-        if not haszombie then room:gameOver("rebel") end
-        if not haslivezombie then room:gameOver("lord+loyalist") end
-      end
-    elseif event == fk.TurnStart then
-      room:removePlayerMark(player, "zombie_mustdie", 1)
-      room:killPlayer{
-        who = player.id,
-      }
-      zombify(player, "rebel", 10)
-      player:drawCards(5)
-    elseif event == fk.EventPhaseStart then
-      room:addPlayerMark(player, "@zombie_tuizhi", 1)
-      if player:getMark("@zombie_tuizhi") >= 8 then
-        room:sendLog { type = "zombie_tuizhi_success" }
-        room:gameOver("lord+loyalist")
-        return true
-      end
-    elseif event == fk.GameOverJudge then
-      room:setTag("SkipGameRule", true)
-    elseif event == fk.BuryVictim then
-      local damage = data.damage
-      local victim = room:getPlayerById(data.who)
-
-      if victim.role == "lord" then
-        local tmp = victim:getNextAlive()
-        local nextp = tmp
-        repeat
-          if nextp.role == "loyalist" then
-            room:setPlayerMark(nextp, "@zombie_tuizhi", math.max(victim:getMark("@zombie_tuizhi") - 1, 0))
-            nextp.role = "lord"
-            room:broadcastProperty(nextp, "role")
-            room:changeMaxHp(nextp, 1)
-            room:recover({
-              who = nextp,
-              num = 1,
-              skillName = self.name
-            })
-            break
-          end
-          nextp = nextp:getNextAlive()
-        until nextp == tmp
-      end
-
-      if damage and damage.from then
-        local killer = damage.from
-        -- print(killer.dead)
-        if killer.dead then return end
-        if victim.role == "rebel" or victim.role == "renegade" then
-          killer:drawCards(3, "kill")
-          if killer:isWounded() then
-            room:recover({
-              who = killer,
-              num = killer:getLostHp(),
-              skillName = self.name
-            })
-          end
-        elseif table.contains(human_role, victim.role) then
-          if table.contains(human_role, killer.role) then
-            killer:throwAllCards("he")
-          end
-        end
-      end
-    elseif event == fk.Deathed then
-      local damage = data.damage
-      local victim = room:getPlayerById(data.who)
-      if damage and damage.from then
-        local killer = damage.from
-        if killer.dead then return end
-        if table.contains(human_role, victim.role) then
-          if killer.role == "renegade" then
-            killer.role = "rebel"
-            room:broadcastProperty(killer, "role")
-          end
-          if table.contains(zombie_role, killer.role) then
-            local current = room.logic:getCurrentEvent()
-            local last_event
-            if room.current == victim then
-              last_event = current:findParent(GameEvent.Turn, true)
-            else
-              last_event = current
-              if last_event.parent then
-                repeat
-                  if table.contains({GameEvent.Round, GameEvent.Turn, GameEvent.Phase}, last_event.parent.event) then break end
-                  last_event = last_event.parent
-                until (not last_event.parent)
-              end
-            end
-            last_event:addExitFunc(function()
-              zombify(victim, "renegade", killer.maxHp)
-            end)
-          end
-        end
-      end
-
-      local winner = Fk.game_modes[room.settings.gameMode]:getWinner(victim)
-      if winner then
-        room:gameOver(winner)
-        return true
-      end
-    end
-  end,
-}
-Fk:addSkill(zombie_rule)
 
 local zombie_mode = fk.CreateGameMode{
   name = "zombie_mode",
   minPlayer = 8,
   maxPlayer = 8,
   logic = zombie_getLogic,
-  rule = zombie_rule,
+  --rule = Fk.skills["#zombie_rule&"] --[[@as TriggerSkill]]
   winner_getter = function(self, victim)
     if not victim.surrendered and victim.rest > 0 then
       return ""
     end
     local room = victim.room
-    local haszombie = table.find(room.players, function(p) return p.role == "rebel" end)
+    local haszombie = table.find(room.players, function(p)
+      return p.role == "rebel"
+    end) ~= nil
 
     local alive = table.filter(room.players, function(p)
       return not p.surrendered and not (p.dead and p.rest == 0)
@@ -278,10 +121,10 @@ local zombie_mode = fk.CreateGameMode{
     local rebel_win = true
     local lord_win = haszombie
     for _, p in ipairs(alive) do
-      if table.contains(human_role, p.role) then
+      if table.contains({ "lord", "loyalist" }, p.role) then
         rebel_win = false
       end
-      if table.contains(zombie_role, p.role) then
+      if table.contains({ "rebel", "renegade" }, p.role) then
         lord_win = false
       end
     end
@@ -297,8 +140,6 @@ local zombie_mode = fk.CreateGameMode{
 Fk:loadTranslationTable{
   ["zombie_mode"] = "僵尸模式",
   [":zombie_mode"] = zombie_desc,
-  ["@zombie_tuizhi"] = "退治",
-  ["zombie_tuizhi_success"] = "主公已经集齐8个退治标记！僵尸被退治！",
 }
 
 return zombie_mode

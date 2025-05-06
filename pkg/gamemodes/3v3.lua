@@ -231,8 +231,13 @@ local m_3v3_getLogic = function()
       local my_selected = (p == cool_marshal) and cool_selected or warm_selected
       local ur_selected = (p == cool_marshal) and warm_selected or cool_selected
       local my_genrals = (p == cool_marshal) and cool_generals or warm_generals
-      local result = room:askForCustomDialog(p, "m_3v3_mode", "packages/gamemode/qml/1v1.qml",
-      { all_generals, n, my_selected, ur_selected, prompt } )
+      local result = room:askToCustomDialog(p, {
+        skill_name = "m_3v3_mode",
+        qml_path = "packages/gamemode/qml/1v1.qml",
+        extra_data = {
+          all_generals, n, my_selected, ur_selected, prompt
+        }
+      })
       local selected = {}
       if result ~= "" then
         result = json.decode(result)
@@ -306,10 +311,10 @@ local m_3v3_getLogic = function()
         fk.qCritical("Skill: "..skillName.." doesn't exist!")
         return
       end
-      if skill.lordSkill then
+      if skill:hasTag(Skill.Lord) then
         return
       end
-      if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
+      if skill:hasTag(Skill.AttachedKingdom) and not table.contains(skill:getSkeleton().attached_kingdom, player.kingdom) then
         return
       end
 
@@ -338,21 +343,25 @@ local m_3v3_getLogic = function()
       return p.role == "warm_marshal"
     end)
     local function CommandAction(marshal)
+      room = marshal.room
       local friends = table.filter(room.alive_players, function (p)
         return marshal.role[1] == p.role[1] and p:getMark("@!action-round") == 0
       end)
       if #friends > 0 then
-        local to
+        local to = friends[1]
         if #friends > 1 then
-          to = room:askForChoosePlayers(marshal, table.map(friends, Util.IdMapper), 1, 1,
-            "#m_3v3_action", "m_3v3_gamerule", false)
-          to = room:getPlayerById(to[1])
-        else
-          to = friends[1]
+          to = room:askToChoosePlayers(marshal, {
+            min_num = 1,
+            max_num = 1,
+            targets = friends,
+            skill_name = "m_3v3_gamerule",
+            prompt = "#m_3v3_action",
+            cancelable = false,
+          })[1]
         end
         room:setCurrent(to)
         room:setPlayerMark(to, "@!action-round", 1)
-        GameEvent.Turn:create(to):exec()
+        GameEvent.Turn:create(TurnData:new(to)):exec()
         while to ~= marshal do
           if room.game_finished then break end
           local vanguards = table.filter(room.alive_players, function (p)
@@ -360,16 +369,22 @@ local m_3v3_getLogic = function()
           end)
           if #vanguards > 0 then
             if #vanguards > 1 then
-              to = room:askForChoosePlayers(marshal, table.map(vanguards, Util.IdMapper), 1, 1,
-                "#m_3v3_action", "m_3v3_gamerule", false)
+              to = room:askToChoosePlayers(marshal, {
+                min_num = 1,
+                max_num = 1,
+                targets = vanguards,
+                skill_name = "m_3v3_gamerule",
+                prompt = "#m_3v3_action",
+                cancelable = false,
+              })[1]
               room:setCurrent(to)
               room:setPlayerMark(to, "@!action-round", 1)
-              GameEvent.Turn:create(to):exec()
+              GameEvent.Turn:create(TurnData:new(to)):exec()
             else
               to = vanguards[1]
               room:setCurrent(to)
               room:setPlayerMark(to, "@!action-round", 1)
-              GameEvent.Turn:create(to):exec()
+              GameEvent.Turn:create(TurnData:new(to)):exec()
             end
           else
             break
@@ -388,9 +403,9 @@ local m_3v3_getLogic = function()
   end
 
   function m_3v3_logic:action()
-    self:trigger(fk.GamePrepared)
     local room = self.room
-    room:setTag("SkipNormalDeathProcess", true)
+    room:addSkill(Fk.skills["#m_3v3_rule&"])
+    self:trigger(fk.GamePrepared)
 
     GameEvent.DrawInitial:create():exec()
 
@@ -403,82 +418,12 @@ local m_3v3_getLogic = function()
   return m_3v3_logic
 end
 
-local m_3v3_rule = fk.CreateTriggerSkill{
-  name = "#m_3v3_rule",
-  priority = 0.001,
-  mute = true,
-  events = {fk.DrawInitialCards, fk.GameOverJudge, fk.Deathed, fk.PreCardUse, fk.BeforeDrawCard},
-  can_trigger = function (self, event, target, player, data)
-    return target == player and not (event == fk.Deathed and player.rest > 0)
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.DrawInitialCards then
-      if player.seat == 5 then
-        data.num = data.num + 1
-      end
-    elseif event == fk.GameOverJudge then
-      room:setTag("SkipGameRule", true)
-      if target.role == "cool_marshal" then
-        room:gameOver("warm")
-        return true
-      elseif target.role == "warm_marshal" then
-        room:gameOver("cool")
-        return true
-      end
-    elseif event == fk.Deathed and target.role:endsWith("vanguard") then
-      local damage = data.damage
-      if damage and damage.from and not damage.from.dead then
-        damage.from:drawCards(2, "kill")
-      end
-    elseif event == fk.PreCardUse then
-      if data.card.multiple_targets and data.card.skill.min_target_num == 0 then
-        local choice = room:askForChoice(player, {"left", "right"}, "m_3v3_gamerule",
-          "#m_3v3_aoe-choice:::"..data.card:toLogString())
-        if choice == "left" then
-          data.extra_data = data.extra_data or {}
-          data.extra_data.m_3v3_reverse = true
-        end
-      end
-    elseif event == fk.BeforeDrawCard and data.skillName == "ex_nihilo" then  --转化出的原版无中（eg.孙乾），按理来说应该改卡牌的skill
-      if 2 * #table.filter(room.alive_players, function (p)
-        return p.role[1] == target.role[1]
-      end) < #room.alive_players then
-        data.num = data.num + 1
-      end
-    end
-  end,
-
-  refresh_events = {fk.BeforeCardUseEffect},
-  can_refresh = function(self, event, target, player, data)
-    return player.seat == 1 and data.extra_data and data.extra_data.m_3v3_reverse and
-      #TargetGroup:getRealTargets(data.tos) > 0
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    local new_tos = {}
-    local players = {room.current}
-    table.insertTable(players, table.reverse(room:getOtherPlayers(room.current)))
-    for _, p in ipairs(players) do
-      for _, info in ipairs(data.tos) do
-        if info[1] == p.id then
-          table.insert(new_tos, info)
-          break
-        end
-      end
-    end
-    data.tos = new_tos
-  end,
-}
-Fk:addSkill(m_3v3_rule)
-
 local m_3v3_mode = fk.CreateGameMode{
   name = "m_3v3_mode",
   minPlayer = 6,
   maxPlayer = 6,
   logic = m_3v3_getLogic,
-  rule = m_3v3_rule,
+  rule = Fk.skills["#m_3v3_rule&"] --[[@as TriggerSkill]],
   surrender_func = function(self, playedTime)
     if Self.role:endsWith("vanguard") then
       return { { text = "vanguard_never_surrender", passed = false } }
@@ -547,7 +492,12 @@ local m_3v3_mode = fk.CreateGameMode{
     end
 
     return draw, void
-  end
+  end,
+  reward_punish = function (self, victim, killer)
+    if killer and victim.role:endsWith("vanguard") and not killer.dead then
+      killer:drawCards(2, "kill")
+    end
+  end,
 }
 
 Fk:loadTranslationTable{
@@ -570,8 +520,6 @@ Fk:loadTranslationTable{
   ["#m_3v3_action"] = "选择一名友方角色行动",
 
   ["#m_3v3_aoe-choice"] = "选择你使用%arg结算的方向",
-  ["left"] = "←顺时针方向",
-  ["right"] = "逆时针方向→",
 
   ["cool_marshal+cool_vanguard"] = "冷色方",
   ["warm_marshal+warm_vanguard"] = "暖色方",

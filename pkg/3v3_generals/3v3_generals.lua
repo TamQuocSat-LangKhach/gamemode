@@ -1,17 +1,4 @@
--- SPDX-License-Identifier: GPL-3.0-or-later
-local extension = Package("3v3_generals")
-extension.extensionName = "gamemode"
-extension.game_modes_whitelist = {
-  "m_3v3_mode",
-}
 
-local U = require "packages/utility/utility"
-
-Fk:loadTranslationTable{
-  ["3v3_generals"] = "3v3专属武将",
-  ["v33"] = "3v3",
-  ["v33_nos"] = "3v3旧",
-}
 
 --2012：诸葛瑾
 local zhugejin = General(extension, "v33__zhugejin", "wu", 3)
@@ -62,15 +49,7 @@ local hongyuan_trigger = fk.CreateTriggerSkill{
     end
   end,
 }
-hongyuan:addRelatedSkill(hongyuan_trigger)
-zhugejin:addSkill(huanshi)
-zhugejin:addSkill(hongyuan)
-zhugejin:addSkill("mingzhe")
 Fk:loadTranslationTable{
-  ["v33__zhugejin"] = "诸葛瑾",
-  ["#v33__zhugejin"] = "联盟的维系者",
-  ["illustrator:v33__zhugejin"] = "LiuHeng",
-
   ["v33__huanshi"] = "缓释",
   [":v33__huanshi"] = "当己方角色的判定牌生效前，你可以打出一张牌代替之。",
   ["v33__hongyuan"] = "弘援",
@@ -78,9 +57,6 @@ Fk:loadTranslationTable{
   ["#v33__huanshi-invoke"] = "缓释：是否打出一张牌修改 %dest 的判定牌？",
 }
 
---2013：文聘 夏侯惇 关羽 赵云 吕布
-local wenpin = General(extension, "v33__wenpin", "wei", 4)
-wenpin.hidden = true
 local zhenwei = fk.CreateDistanceSkill{
   name = "v33__zhenwei",
   correct_func = function(self, from, to)
@@ -91,15 +67,9 @@ local zhenwei = fk.CreateDistanceSkill{
     end
   end,
 }
-wenpin:addSkill(zhenwei)
 Fk:loadTranslationTable{
-  ["v33__wenpin"] = "文聘",
-  ["#v33__wenpin"] = "坚城宿将",
-  ["illustrator:v33__wenpin"] = "木美人",
-
   ["v33__zhenwei"] = "镇卫",
   [":v33__zhenwei"] = "锁定技，对方角色计算与己方角色的距离+1。",
-  --2021增强版，不限“其他”己方角色
 }
 
 local xiahoudun = General(extension, "v33__xiahoudun", "wei", 4)
@@ -143,12 +113,7 @@ local ganglie = fk.CreateTriggerSkill{
     end
   end,
 }
-xiahoudun:addSkill(ganglie)
 Fk:loadTranslationTable{
-  ["v33__xiahoudun"] = "夏侯惇",
-  ["#v33__xiahoudun"] = "独眼的罗刹",
-  ["illustrator:v33__xiahoudun"] = "KayaK",
-
   ["v33__ganglie"] = "刚烈",
   [":v33__ganglie"] = "当你受到伤害后，你可以选择一名对方角色，然后判定，若结果不为<font color='red'>♥</font>，其选择一项：1.弃置两张手牌；"..
   "2.你对其造成1点伤害。",
@@ -157,7 +122,6 @@ Fk:loadTranslationTable{
 
   ["$v33__ganglie1"] = "鼠辈，竟敢伤我！",
   ["$v33__ganglie2"] = "以彼之道，还施彼身！",
-  ["~v33__xiahoudun"] = "两边都看不见了……",
 }
 
 local guanyu = General(extension, "v33__guanyu", "shu", 4)
@@ -200,20 +164,10 @@ local zhongyi_delay = fk.CreateTriggerSkill{
     data.damage = data.damage + 1
   end,
 }
-zhongyi:addRelatedSkill(zhongyi_delay)
-guanyu:addSkill("wusheng")
-guanyu:addSkill(zhongyi)
 Fk:loadTranslationTable{
-  ["v33__guanyu"] = "关羽",
-  ["#v33__guanyu"] = "美髯公",
-  ["illustrator:v33__guanyu"] = "KayaK",
-
   ["zhongyi"] = "忠义",
   [":zhongyi"] = "出牌阶段，若你没有“义”，你可以将任意张红色牌置为“义”。当己方角色使用【杀】对对方角色造成伤害时，你移去一张“义”，令此伤害+1。",
   ["#zhongyi"] = "忠义：将任意张红色牌置于武将牌上，友方使用【杀】造成伤害时移去一张，此伤害+1",
-  --2019增强版，原2013版为限定技
-
-  ["~v33__guanyu"] = "什么？此地名叫麦城？",
 }
 
 local zhaoyun = General(extension, "v33__zhaoyun", "shu", 4)
@@ -252,18 +206,10 @@ local jiuzhu = fk.CreateTriggerSkill{
     end
   end,
 }
-zhaoyun:addSkill("longdan")
-zhaoyun:addSkill(jiuzhu)
 Fk:loadTranslationTable{
-  ["v33__zhaoyun"] = "赵云",
-  ["#v33__zhaoyun"] = "少年将军",
-  ["illustrator:v33__zhaoyun"] = "KayaK",
-
   ["jiuzhu"] = "救主",
   [":jiuzhu"] = "当己方一名其他角色处于濒死状态时，若你的体力值大于1，你可以弃置一张牌并失去1点体力，令该角色回复1点体力。",
   ["#jiuzhu-invoke"] = "救主：你可以弃一张牌并失去1点体力，令 %dest 回复1点体力",
-
-  ["~v33__zhaoyun"] = "这，就是失败的滋味吗？",
 }
 
 local lvbu = General(extension, "v33_nos__lvbu", "qun", 4)
@@ -289,19 +235,9 @@ local zhanshen = fk.CreateTriggerSkill{
     end
   end,
 }
-lvbu:addSkill("wushuang")
-lvbu:addSkill(zhanshen)
-lvbu:addRelatedSkill("mashu")
-lvbu:addRelatedSkill("shenji")
 Fk:loadTranslationTable{
-  ["v33_nos__lvbu"] = "吕布",
-  ["#v33_nos__lvbu"] = "武的化身",
-  ["illustrator:v33_nos__lvbu"] = "KayaK",
-
   ["zhanshen"] = "战神",
   [":zhanshen"] = "觉醒技，准备阶段，若你已受伤且己方有角色已死亡，你减1点体力上限，获得技能〖马术〗和〖神戟〗。",
-
-  ["~v33_nos__lvbu"] = "不可能……！",
 }
 
 --2019：黄权
@@ -364,14 +300,7 @@ local zhongjianh = fk.CreateActiveSkill{
     end
   end,
 }
-choujin:addRelatedSkill(choujin_delay)
-huangquan:addSkill(choujin)
-huangquan:addSkill(zhongjianh)
 Fk:loadTranslationTable{
-  ["v33__huangquan"] = "黄权",
-  ["#v33__huangquan"] = "道绝殊途",
-  ["illustrator:v33__huangquan"] = "兴游",
-
   ["choujin"] = "筹进",
   [":choujin"] = "锁定技，亮将结束后，你选择一名对方角色：每回合限两次，当己方角色对该角色造成伤害后，该己方角色摸一张牌。",
   --2023削弱版，原2019版不限敌方角色且摸牌无次数限制
@@ -385,7 +314,6 @@ Fk:loadTranslationTable{
   ["$choujin2"] = "就用你，给我军祭旗！",
   ["$zhongjianh1"] = "锦上添花，不如雪中送炭。",
   ["$zhongjianh2"] = "密计交于将军，可解燃眉之困。",
-  ["~v33__huangquan"] = "魏王厚待于我，降魏又有何错？",
 }
 
 --2023：吕布 徐盛
@@ -458,13 +386,7 @@ local v33__zhanshen_trigger = fk.CreateTriggerSkill{
     end
   end,
 }
-v33__zhanshen:addRelatedSkill(v33__zhanshen_trigger)
-v33__lvbu:addSkill(v33__zhanshen)
 Fk:loadTranslationTable{
-  ["v33__lvbu"] = "吕布",
-  ["#v33__lvbu"] = "武的化身",
-  ["illustrator:v33__lvbu"] = "第七个桔子",
-
   ["v33__zhanshen"] = "战神",
   [":v33__zhanshen"] = "锁定技，准备阶段，你选择一项未获得过的效果，获得此效果直到本局游戏结束：<br>"..
   "1.摸牌阶段，你多摸一张牌；<br>2.你使用【杀】造成伤害+1；<br>3.你使用【杀】可以额外选择一个目标。",
@@ -476,7 +398,6 @@ Fk:loadTranslationTable{
 
   ["$v33__zhanshen1"] = "战神降世，神威再临！",
   ["$v33__zhanshen2"] = "战神既出，谁与争锋！",
-  ["~v33__lvbu"] = "不可能！",
 }
 
 local xusheng = General(extension, "v33__xusheng", "wu", 4)
@@ -509,13 +430,7 @@ local yicheng = fk.CreateTriggerSkill{
     end
   end
 }
-xusheng:addSkill(yicheng)
 Fk:loadTranslationTable{
-  ["v33__xusheng"] = "徐盛",
-  ["#v33__xusheng"] = "江东的铁壁",
-  ["designer:v33__xusheng"] = "淬毒",
-  ["illustrator:v33__xusheng"] = "天信",
-
   ["v33__yicheng"] = "疑城",
   [":v33__yicheng"] = "当己方角色成为敌方角色使用【杀】的目标后，你可以令其摸一张牌，然后其弃置一张手牌；若弃置的是装备牌，则改为其使用之。",
   ["#v33__yicheng-ask"] = "疑城：是否令 %dest 摸一张牌并弃置一张手牌？",
@@ -523,7 +438,4 @@ Fk:loadTranslationTable{
 
   ["$v33__yicheng1"] = "不怕死，就尽管放马过来！",
   ["$v33__yicheng2"] = "待末将布下疑城，以退曹贼。",
-  ["~v33__xusheng"] = "可怜一身胆略，尽随一抔黄土……",
 }
-
-return extension

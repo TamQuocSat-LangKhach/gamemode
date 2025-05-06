@@ -10,7 +10,7 @@ Fk:loadTranslationTable{
 
 jiange__danjing:addEffect(fk.AskForPeaches, {
   anim_type = "support",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return player:hasSkill(jiange__danjing.name) and target.dying and table.contains(U.GetFriends(player.room, player, false), target) and
       player.hp > 1
   end,
@@ -20,7 +20,7 @@ jiange__danjing:addEffect(fk.AskForPeaches, {
       prompt = "#jiange__danjing-invoke::"..target.id
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:loseHp(player, 1, jiange__danjing.name)
     if not target.dead then

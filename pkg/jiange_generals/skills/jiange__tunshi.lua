@@ -10,13 +10,13 @@ Fk:loadTranslationTable{
 
 jiange__tunshi:addEffect(fk.EventPhaseStart, {
   anim_type = "offensive",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(skill.name) and player.phase == Player.Start and
       table.find(U.GetEnemies(player.room, player), function (p)
         return p:getHandcardNum() > player:getHandcardNum()
       end)
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     local targets = table.filter(U.GetEnemies(room, player), function (p)
       return p:getHandcardNum() > player:getHandcardNum()

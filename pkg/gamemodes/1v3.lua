@@ -33,27 +33,11 @@ local desc_1v3 = [[
   
   重整：完成休整后的角色回满并摸6-X张牌（X为其体力值），复活的回合不能行动。
 
-  特殊摸牌：有联军撤退或阵亡时，队友可以选择是否摸两张牌或回复一点体力（若启用双将则改为是否摸一张牌）。
+  特殊摸牌：有联军撤退或阵亡时，队友可以选择是否摸两张牌或回复1点体力（若启用双将则改为是否摸一张牌）。
 
   武器重铸：该模式下武器牌可重铸。
 
 ]]
-
-local recastSkill = fk.CreateActiveSkill{
-  name = "1v3_recast_weapon&",
-  anim_type = "drawcard",
-  card_num = 1,
-  card_filter = function(self, player, to_select, selected)
-    return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon and
-      Fk:currentRoom():getCardArea(to_select) == Card.PlayerHand and
-      not Self:prohibitDiscard(Fk:getCardById(to_select))
-  end,
-  target_filter = Util.FalseFunc,
-  on_use = function(self, room, effect)
-    room:recastCard(effect.cards, room:getPlayerById(effect.from))
-  end,
-}
-Fk:addSkill(recastSkill)
 
 local m_1v3_getLogic = function()
   ---@class Logic1v3: GameLogic
@@ -93,21 +77,25 @@ local m_1v3_getLogic = function()
           end
         end
         generals = table.map(generals, Util.NameMapper)
-        general = room:askForGeneral(p, table.random(generals, generalNum), 1)
+        general = room:askToChooseGeneral(p, {
+          generals = table.random(generals, generalNum),
+          n = 1,
+        })
         if n == 2 then
           generals = Fk:getGeneralsRandomly(generalNum)
           generals = table.map(generals, Util.NameMapper)
-          deputy = room:askForGeneral(p, table.random(generals, generalNum), 1)
-        else
-          -- TODO: 需要深入，目前头疼医头
-          p.request_timeout = room.timeout
-          local start = os.getms()
-          p.request_start = start
+          deputy = room:askToChooseGeneral(p, {
+            generals = table.random(generals, generalNum),
+            n = 1,
+          })
         end
       else
         local generals = Fk:getGeneralsRandomly(generalNum)
         generals = table.map(generals, Util.NameMapper)
-        local g = room:askForGeneral(p, generals, n)
+        local g = room:askToChooseGeneral(p, {
+          generals = generals,
+          n = n,
+        })
         if n == 1 then g = { g } end
         general, deputy = table.unpack(g)
       end
@@ -119,49 +107,36 @@ local m_1v3_getLogic = function()
       room:broadcastProperty(p, "deputyGeneral")
       room:broadcastProperty(p, "kingdom")
     end
-    room:askForChooseKingdom(room:getOtherPlayers(lord))
+    room:askToChooseKingdom(room:getOtherPlayers(lord))
   end
 
   function m_1v3_logic:attachSkillToPlayers()
     local room = self.room
-    local players = room.players
 
     local addRoleModSkills = function(player, skillName)
       local skill = Fk.skills[skillName]
       if not skill then return end
-      if skill.lordSkill then return end
+      if skill:hasTag(Skill.Lord) then return end
 
-      if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
+      if skill:hasTag(Skill.AttachedKingdom) and not table.contains(skill:getSkeleton().attached_kingdom, player.kingdom) then
         return
       end
 
       room:handleAddLoseSkills(player, skillName, nil, false)
     end
     for _, p in ipairs(room.alive_players) do
-      local general = Fk.generals[p.general]
-      local deputy = Fk.generals[p.deputyGeneral]
-
-      if p.role == "lord" then
-        room:changeMaxHp(p, 8 - p.maxHp)
-        room:changeHp(p, 8 - p.hp)
+      for _, s in ipairs(Fk.generals[p.general]:getSkillNameList(false)) do
+        addRoleModSkills(p, s)
       end
-
-      local skills = general.skills
-      for _, s in ipairs(skills) do addRoleModSkills(p, s.name) end
-      for _, sname in ipairs(general.other_skills) do
-        addRoleModSkills(p, sname)
-      end
-
-      if deputy then
-        skills = deputy.skills
-        for _, s in ipairs(skills) do addRoleModSkills(p, s.name) end
-        for _, sname in ipairs(deputy.other_skills) do
-          addRoleModSkills(p, sname)
+      if p.deputyGeneral ~= "" then
+        for _, s in ipairs(Fk.generals[p.deputyGeneral]:getSkillNameList(false)) do
+          addRoleModSkills(p, s)
         end
       end
-
-      room:handleAddLoseSkills(p, "1v3_recast_weapon&")
+      room:handleAddLoseSkills(p, "1v3_recast_weapon&", nil, false)
     end
+
+    room:addSkill("#m_1v3_rule&")
   end
 
   ---@class HulaoRound: GameEvent.Round
@@ -171,15 +146,16 @@ local m_1v3_getLogic = function()
 
     -- 行动顺序：反1->主->反2->主->反3->主，若已暴怒则正常逻辑
     if not room:getTag("m_1v3_phase2") then
-      local p1 = room:getLord()
-      room:setCurrent(p1) -- getOtherPlayers
-      for _, p in ipairs(room:getOtherPlayers(p1, true, true)) do
+      local lord = room:getLord()
+      room:setCurrent(lord) -- getOtherPlayers
+      for _, p in ipairs(room:getOtherPlayers(lord, true, true)) do
+        local rest = p.dead
         room:setCurrent(p)
-        GameEvent.Turn:create(p):exec()
+        GameEvent.Turn:create(TurnData:new(p)):exec()
         if room.game_finished then break end
-        if not p.dead then
-          room.current = p1
-          GameEvent.Turn:create(p1):exec()
+        if not rest then
+          room:setCurrent(lord)
+          GameEvent.Turn:create(TurnData:new(lord)):exec()
           if room.game_finished then break end
         end
       end
@@ -191,130 +167,29 @@ local m_1v3_getLogic = function()
   function m_1v3_logic:action()
     self:trigger(fk.GamePrepared)
     local room = self.room
-    room:setTag("SkipNormalDeathProcess", true)
 
     GameEvent.DrawInitial:create():exec()
 
     while true do
       hulaoRound:create():exec()
       if room.game_finished then break end
-      if table.every(room.players, function(p) return p.dead and p.rest == 0 end) then room:gameOver("") end
+      if table.every(room.players, function(p)
+        return p.dead and p.rest == 0
+      end) then
+        room:gameOver("")
+      end
       room:setCurrent(room.players[1])
     end
   end
 
   return m_1v3_logic
 end
-local m_1v3_rule = fk.CreateTriggerSkill{
-  name = "#m_1v3_rule",
-  priority = 0.001,
-  refresh_events = {
-    fk.DrawInitialCards,
-    fk.BeforeGameOverJudge, fk.Deathed, fk.AfterPlayerRevived,
-    fk.BeforeHpChanged, fk.AfterDrawPileShuffle,
-  },
-  can_refresh = function(self, event, target, player, data)
-    if target ~= player then return false end
-    local room = player.room
-    if event == fk.BeforeGameOverJudge then
-      return player.role ~= "lord"
-    elseif event == fk.AfterPlayerRevived then
-      return player.tag["hulaoRest"] and player.hp < 6
-    elseif event == fk.BeforeHpChanged then
-      return player.role == "lord" and not room:getTag("m_1v3_phase2") and
-        player.hp + data.num <= 4
-    elseif event == fk.AfterDrawPileShuffle then
-      return  not room:getTag("m_1v3_phase2")
-    end
-    return true
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    local n = room.settings.enableDeputy and 2 or 1
-    if event == fk.DrawInitialCards then
-      if player.seat == 1 then data.num = 8
-      else data.num = player.seat + 1 end
-    elseif event == fk.AfterPlayerRevived then
-      player:drawCards(6 - player.hp, self.name)
-    elseif event == fk.BeforeGameOverJudge then
-      if data.damage and data.damage.from == room:getLord() then
-        player._splayer:setDied(false)
-        if n == 1 then
-         room:setPlayerRest(player, 4)
-        else
-          room:setPlayerRest(player, 6)
-        end
-        player.tag["hulaoRest"] = true
-      end
-      local onlyLvbu = #room:getOtherPlayers(room:getLord()) == 0
-      if onlyLvbu then
-        room:gameOver("lord")
-      end
-    elseif event == fk.Deathed then
-      for _, p in ipairs(room.alive_players) do
-        if p.role == player.role then
-         if n == 2 then
-           if room:askForSkillInvoke(p, self.name, nil, "#m_1v3_death_draw") then
-              p:drawCards(1)
-            end
-          else
-            local choices = {"draw2", "Cancel"}
-            if p:isWounded() then
-              table.insert(choices, 2, "recover")
-            end
-            local choice = room:askForChoice(p, choices, self.name)
-            if choice == "draw2" then p:drawCards(2, self.name)
-            else room:recover{ who = p, num = 1, skillName = self.name } end
-          end
-        end
-      end
-    elseif event == fk.BeforeHpChanged or event == fk.AfterDrawPileShuffle then
-      local round = room.logic:getCurrentEvent():findParent(GameEvent.Round)
-      room:notifySkillInvoked(player, "m_1v3_convert", "big")
-      room:setTag("m_1v3_phase2", true)
-      local generals = {}
-      for _, g in pairs(Fk.generals) do
-        if g.hulao_status == 2 and
-          g.trueName == Fk.generals[player.general].trueName and
-          not table.contains(room.disabled_packs, g.package.name) and
-          not table.contains(room.disabled_generals, g) then
-          table.insert(generals, g)
-        end
-      end
-      generals = table.map(generals, Util.NameMapper)
-      local general = room:askForGeneral(player, generals, 1, true)
-      room:changeHero(player, general, false, false, true, false, false)
-      room:changeMaxHp(player, 6 - player.maxHp)
-      room:changeHp(player, 6 - player.hp, nil, self.name)
-      player:throwAllCards('j')
-      if player.chained then
-        player:setChainState(false)
-      end
-      if not player.faceup then
-        player:turnOver()
-      end
-      if round then
-        room.current = player
-        round:shutdown()
-      end
-    end
-  end,
 
-  events = {fk.BeforeTurnStart},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player.tag["hulaoRest"]
-  end,
-  on_trigger = function(self, event, target, player, data)
-    player.tag["hulaoRest"] = false
-    return true
-  end
-}
-Fk:addSkill(m_1v3_rule)
 local m_1v3_mode = fk.CreateGameMode{
   name = "m_1v3_mode",
   minPlayer = 4,
   maxPlayer = 4,
-  rule = m_1v3_rule,
+  rule = Fk.skills["#m_1v3_rule&"] --[[@as TriggerSkill]],
   logic = m_1v3_getLogic,
   surrender_func = function(self, playedTime)
     local surrenderJudge = { { text = "time limitation: 5 min", passed = playedTime >= 300 },
@@ -339,6 +214,40 @@ local m_1v3_mode = fk.CreateGameMode{
     end
     return winner
   end,
+  reward_punish = function (self, victim, killer)
+    local room = victim.room
+    local n = room.settings.enableDeputy and 2 or 1
+    for _, p in ipairs(room.alive_players) do
+      if p.role == victim.role and not p.dead then
+       if n == 2 then
+         if room:askToSkillInvoke(p, {
+          skill_name = "PickLegacy",
+          prompt = "#m_1v3_death_draw",
+        }) then
+            p:drawCards(1, "game_rule")
+          end
+        else
+          local choices = {"draw2", "Cancel"}
+          if p:isWounded() then
+            table.insert(choices, 2, "recover")
+          end
+          local choice = room:askToChoice(p, {
+            choices = choices,
+            skill_name = "PickLegacy",
+          })
+          if choice == "draw2" then
+            p:drawCards(2, "game_rule")
+          else
+            room:recover{
+              who = p,
+              num = 1,
+              skillName = "game_rule",
+            }
+          end
+        end
+      end
+    end
+  end,
 }
 Fk:loadTranslationTable{
   ["m_1v3_mode"] = "虎牢关1v3",
@@ -346,10 +255,6 @@ Fk:loadTranslationTable{
   ["#m_1v3_death_draw"] = "是否摸一张牌？",
   ["#m_1v3_rule"] = "虎牢关规则",
   ["m_1v3_convert"] = "暴怒",
-  -- ["time limitation: 2 min"] = "游戏时长达到2分钟",
-  -- ["2v2: left you alive"] = "你所处队伍仅剩你存活",
-  ["1v3_recast_weapon&"] = "武器重铸",
-  [":1v3_recast_weapon&"] = "你可以重铸手里的武器牌。",
 }
 
 return m_1v3_mode

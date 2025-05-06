@@ -291,7 +291,7 @@ local yinli = fk.CreateTriggerSkill{
           end
         end
       end
-      ids = U.moveCardsHoldingAreaCheck(room, ids)
+      ids = player.room.logic:moveCardsHoldingAreaCheck(ids)
       if #ids > 0 then
         self.cost_data = ids
         return true

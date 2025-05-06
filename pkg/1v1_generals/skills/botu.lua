@@ -11,11 +11,11 @@ Fk:loadTranslationTable{
 }
 
 botu:addEffect(fk.TurnEnd, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(skill.name) 
       and #player:getTableMark("@v11__botu-turn") == 4
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     player:gainAnExtraTurn()
   end,
 

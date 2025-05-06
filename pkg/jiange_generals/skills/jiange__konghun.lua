@@ -9,17 +9,17 @@ Fk:loadTranslationTable{
 }
 
 jiange__konghun:addEffect(fk.EventPhaseStart, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__konghun.name) and player.phase == Player.Play and player:isWounded() and
       player:getLostHp() >= #U.GetEnemies(player.room, player)
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
       skill_name = jiange__konghun.name,
       prompt = "#jiange__konghun-invoke"
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:doIndicate(player.id, table.map(U.GetEnemies(room, player), Util.IdMapper))
     local n = 0

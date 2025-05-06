@@ -9,16 +9,16 @@ extension:addGameMode(require "packages/gamemode/pkg/gamemodes/1v2")
 extension:addGameMode(require "packages/gamemode/pkg/gamemodes/1v2_brawl")
 extension:addGameMode(require "packages/gamemode/pkg/gamemodes/2v2")
 extension:addGameMode(require "packages/gamemode/pkg/gamemodes/1v1")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/3v3")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/1v3")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/chaos_mode")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/3v3")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/1v3")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/chaos_mode")
 extension:addGameMode(require "packages/gamemode/pkg/gamemodes/espionage")
 extension:addGameMode(require "packages/gamemode/pkg/gamemodes/variation")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/vanished_dragon")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/qixi")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/zombie_mode")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/kangqin")
---extension:addGameMode(require "packages/gamemode/pkg/gamemodes/jiange")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/vanished_dragon")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/qixi")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/zombie_mode")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/kangqin")
+extension:addGameMode(require "packages/gamemode/pkg/gamemodes/jiange")
 
 local chaos_mode_cards = require "packages/gamemode/pkg/chaos_mode_cards"
 local espionage_cards = require "packages/gamemode/pkg/espionage_cards"
@@ -29,7 +29,7 @@ local v11_cards = require "packages/gamemode/pkg/1v1_cards"
 
 local gamemode_generals = require "packages/gamemode/pkg/gamemode_generals"
 --local m_1v1_generals = require "packages/gamemode/pkg/1v1_generals"
---local m_3v3_generals = require "packages/gamemode/pkg/3v3_generals"
+local m_3v3_generals = require "packages/gamemode/pkg/3v3_generals"
 --local jiange_generals = require "packages/gamemode/pkg/jiange_generals"
 
 Fk:loadTranslationTable{ ["gamemode"] = "游戏模式" }
@@ -47,6 +47,6 @@ return {
 
   gamemode_generals,
   --m_1v1_generals,
-  --m_3v3_generals,
+  m_3v3_generals,
   --jiange_generals,
 }

@@ -16,9 +16,10 @@ local jiange_desc = [[
 
   游戏由8名玩家进行，分为蜀、魏两阵营，双方阵营各有两名普通武将、一名英魂武将、一名攻城器械。
 
-  行动顺序为：
+  行动顺序为以下随机一种：
   
   - 魏势力武将-魏势力攻城器械-蜀势力武将-蜀势力英魂-蜀势力武将-蜀势力攻城器械-蜀势力武将-魏势力英魂
+  - 蜀势力武将-蜀势力攻城器械-魏势力武将-魏势力英魂-魏势力武将-魏势力攻城器械-魏势力武将-蜀势力英魂
   
   胜利条件为消灭所有敌方阵营角色。
 
@@ -117,15 +118,13 @@ local jiange_desc = [[
   - 魏势力技能〖筑围〗：当你的判定牌生效后，若为【杀】或伤害类锦囊牌，你可以获得之，并令当前回合角色本回合出牌阶段使用【杀】次数和手牌上限+1。
 ]]
 
-local U = require "packages/utility/utility"
-
 local jiange_getLogic = function()
   local jiange_logic = GameLogic:subclass("jiange_logic") ---@class GameLogic
 
   function jiange_logic:initialize(room)
     GameLogic.initialize(self, room)
     self.role_table = {
-      --{"shu", "shu", "wei", "wei", "wei", "wei", "shu", "shu"},
+      {"shu", "shu", "wei", "wei", "wei", "wei", "shu", "shu"},
       {"wei", "wei", "shu", "shu", "shu", "shu", "wei", "wei"},
     }
   end
@@ -320,10 +319,10 @@ local jiange_getLogic = function()
         fk.qCritical("Skill: "..skillName.." doesn't exist!")
         return
       end
-      if skill.lordSkill then
+      if skill:hasTag(Skill.Lord) then
         return
       end
-      if #skill.attachedKingdom > 0 and not table.contains(skill.attachedKingdom, player.kingdom) then
+      if skill:hasTag(Skill.AttachedKingdom) and not table.contains(skill:getSkeleton().attached_kingdom, player.kingdom) then
         return
       end
 
@@ -371,36 +370,11 @@ local jiange_getLogic = function()
   return jiange_logic
 end
 
-local jiange_rule = fk.CreateTriggerSkill{
-  name = "#jiange_rule",
-  priority = 0.001,
-  mute = true,
-  events = { fk.GameOverJudge },
-  can_trigger = function (self, event, target, player, data)
-    return target == player
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.GameOverJudge then
-      room:setTag("SkipGameRule", true)
-      if not table.find(room.players, function(p)
-        return (p.rest > 0 or not p.dead) and p ~= player and p.role == player.role
-      end) then
-        room:gameOver(room.alive_players[1].role)
-        return true
-      end
-    end
-  end,
-}
-Fk:addSkill(jiange_rule)
-
 local jiange_mode = fk.CreateGameMode{
   name = "jiange_mode",
   minPlayer = 8,
   maxPlayer = 8,
   logic = jiange_getLogic,
-  rule = jiange_rule,
   surrender_func = function(self, playedTime)
     local canSurrender = true
     if table.find(Fk:currentRoom().players, function(p)
@@ -534,231 +508,6 @@ Fk:loadTranslationTable{
   [":jiange_event19"] = "蜀势力角色获得〖享乐〗，魏势力角色获得〖筑围〗<br>"..
   "<font color='red'>〖享乐〗</font>锁定技，当你成为【杀】的目标后，你令使用者选择：1. 弃置一张基本牌；2. 此【杀】对你无效。<br>"..
   "<font color='blue'>〖筑围〗</font>当你的判定牌生效后，若为【杀】或伤害类锦囊牌，你可以获得之，并令当前回合角色本回合出牌阶段使用【杀】次数和手牌上限+1。",
-}
-
-local jiange__weiye = fk.CreateTriggerSkill{
-  name = "jiange__weiye",
-  anim_type = "control",
-  events = {fk.EventPhaseStart},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and player.phase == Player.Start and not player:isNude() and
-      #U.GetEnemies(player.room, player) > 0
-  end,
-  on_cost = function (self, event, target, player, data)
-    local ids = table.filter(player:getCardIds("he"), function(id) return not player:prohibitDiscard(Fk:getCardById(id)) end)
-    local to, card = player.room:askForChooseCardAndPlayers(player, table.map(U.GetEnemies(player.room, player), Util.IdMapper), 1, 1,
-      tostring(Exppattern{ id = ids }), "#jiange__weiye-invoke", self.name, true, false)
-    if #to == 1 and card then
-      self.cost_data = {to[1], card}
-      return true
-    end
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local to = room:getPlayerById(self.cost_data[1])
-    room:throwCard(self.cost_data[2], self.name, player, player)
-    if to.dead then return end
-    if player.dead then
-      room:askForDiscard(to, 1, 1, true, self.name, false)
-    else
-      if #room:askForDiscard(to, 1, 1, true, self.name, true, nil, "#jiange__weiye-discard:"..player.id) == 0 then
-        player:drawCards(1, self.name)
-      end
-    end
-  end,
-}
-Fk:addSkill(jiange__weiye)
-
-local jiange__jixi = fk.CreateViewAsSkill{
-  name = "jiange__jixi",
-  anim_type = "control",
-  pattern = "snatch",
-  prompt = "#jiange__jixi",
-  card_filter = function(self, player, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeTrick
-  end,
-  before_use = function (self, player)
-    player:broadcastSkillInvoke("jixi")
-  end,
-  view_as = function(self, player, cards)
-    if #cards ~= 1 then return end
-    local card = Fk:cloneCard("snatch")
-    card.skillName = self.name
-    card:addSubcard(cards[1])
-    return card
-  end,
-}
-Fk:addSkill(jiange__jixi)
-
-local jiange__fangong = fk.CreateTriggerSkill{
-  name = "jiange__fangong",
-  anim_type = "offensive",
-  events = {fk.CardUseFinished},
-  can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and table.contains(U.GetEnemies(player.room, player), target) and data.tos and
-      table.contains(TargetGroup:getRealTargets(data.tos), player.id)
-  end,
-  on_cost = function (self, event, target, player, data)
-    local use = player.room:askForUseCard(player, self.name, "slash", "#jiange__fangong-slash::"..target.id, true,
-      {bypass_times = true, bypass_distances = true, extraUse = true, must_targets = {target.id}})
-    if use then
-      self.cost_data = use
-      return true
-    end
-  end,
-  on_use = function(self, event, target, player, data)
-    player.room:useCard(self.cost_data)
-  end,
-}
-Fk:addSkill(jiange__fangong)
-
-local jiange__fuyou = fk.CreateTriggerSkill{
-  name = "jiange__fuyou",
-  mute = true,
-  events = {fk.Damage, fk.CardUsing},
-  can_trigger = function(self, event, target, player, data)
-    if target and target == player and player:hasSkill(self) and data.card and
-      data.card:isCommonTrick() and data.card.color == Card.Red then
-      if event == fk.Damage then
-        return player:getMark("jiange__fuyou-turn") == 0
-      else
-        return true
-      end
-    end
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    player:broadcastSkillInvoke(self.name)
-    if event == fk.Damage then
-      room:notifySkillInvoked(player, self.name, "drawcard")
-      room:setPlayerMark(player, "jiange__fuyou-turn", 1)
-      player:drawCards(1, self.name)
-    else
-      room:notifySkillInvoked(player, self.name, "control")
-      data.additionalEffect = (data.additionalEffect or 0) + 1
-    end
-  end,
-}
-Fk:addSkill(jiange__fuyou)
-
-local jiange__yushen = fk.CreateActiveSkill{
-  name = "jiange__yushen",
-  anim_type = "support",
-  card_num = 0,
-  target_num = 1,
-  prompt = function(self)
-    return "#jiange__yushen:::"..self.interaction.data
-  end,
-  interaction = function()
-    return UI.ComboBox {
-      choices = {"yushen2", "yushen1"}
-    }
-  end,
-  can_use = function(self, player)
-    return player:getMark("jiange__yushen_yushen1-phase") == 0 or player:getMark("jiange__yushen_yushen2-phase") == 0
-  end,
-  card_filter = Util.FalseFunc,
-  target_filter = function(self, player, to_select, selected)
-    if #selected == 0 and to_select ~= Self.id and Self:getMark("jiange__yushen_"..self.interaction.data.."-phase") == 0 then
-      local target = Fk:currentRoom():getPlayerById(to_select)
-      if target:isWounded() then
-        local slash = Fk:cloneCard("ice__slash")
-        slash.skillName = self.name
-        if self.interaction.data == "yushen2" then
-          return Self:canUseTo(slash, target, { bypass_times = true, bypass_distances = true })
-        elseif self.interaction.data == "yushen1" then
-          return target:canUseTo(slash, Self, { bypass_times = true, bypass_distances = true })
-        end
-      end
-    end
-  end,
-  on_use = function(self, room, effect)
-    local player = room:getPlayerById(effect.from)
-    local target = room:getPlayerById(effect.tos[1])
-    player:broadcastSkillInvoke("yushen")
-    room:setPlayerMark(player, "jiange__yushen_"..self.interaction.data.."-phase", 1)
-    room:recover({
-      who = target,
-      num = 1,
-      recoverBy = player,
-      skillName = self.name,
-    })
-    if self.interaction.data == "yushen1" then
-      if not player.dead then
-        room:useVirtualCard("ice__slash", nil, target, player, self.name, true)
-      end
-    else
-      if not target.dead then
-        room:useVirtualCard("ice__slash", nil, player, target, self.name, true)
-      end
-    end
-  end
-}
-Fk:addSkill(jiange__yushen)
-
-local jiange__zhuwei = fk.CreateTriggerSkill{
-  name = "jiange__zhuwei",
-  anim_type = "drawcard",
-  events = {fk.FinishJudge},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and data.card.is_damage_card and
-      player.room:getCardArea(data.card) == Card.Processing
-  end,
-  on_cost = function (self, event, target, player, data)
-    local room = player.room
-    self.cost_data = nil
-    local prompt = "#jiange__zhuwei1-invoke:::"..data.card:toLogString()
-    local turn_event = room.logic:getCurrentEvent():findParent(GameEvent.Turn)
-    if turn_event then
-      local to = turn_event.data[1]
-      if not to.dead then
-        prompt = "#jiange__zhuwei2-invoke::"..to.id..":"..data.card:toLogString()
-        self.cost_data = to
-      end
-    end
-    return room:askForSkillInvoke(player, self.name, nil, prompt)
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    room:moveCardTo(data.card, Card.PlayerHand, player, fk.ReasonJustMove, self.name, nil, true, player.id)
-    if self.cost_data then
-      local to = self.cost_data
-      if not to.dead then
-        room:doIndicate(player.id, {to.id})
-        room:addPlayerMark(to, MarkEnum.SlashResidue.."-turn", 1)
-        room:addPlayerMark(to, MarkEnum.AddMaxCardsInTurn, 1)
-        room:broadcastProperty(to, "MaxCards")
-      end
-    end
-  end,
-}
-Fk:addSkill(jiange__zhuwei)
-Fk:loadTranslationTable{
-  ["jiange__weiye"] = "魏业",
-  [":jiange__weiye"] = "准备阶段，你可以弃置一张牌，令一名敌方角色选择一项：1.弃置一张牌；2.你摸一张牌。",
-  ["#jiange__weiye-invoke"] = "魏业：你可以弃置一张牌，令一名敌方角色选择弃置一张牌或令你摸一张牌",
-  ["#jiange__weiye-discard"] = "魏业：弃置一张牌，否则 %src 摸一张牌",
-
-  ["jiange__jixi"] = "急袭",
-  [":jiange__jixi"] = "你可以将一张锦囊牌当【顺手牵羊】使用。",
-  ["#jiange__jixi"] = "急袭：你可以将一张锦囊牌当【顺手牵羊】使用",
-
-  ["jiange__fangong"] = "反攻",
-  [":jiange__fangong"] = "当敌方角色对你使用牌结算后，你可以对其使用一张【杀】。",
-  ["#jiange__fangong-slash"] = "反攻：你可以对 %dest 使用一张【杀】",
-
-  ["jiange__fuyou"] = "福佑",
-  [":jiange__fuyou"] = "每回合限一次，当你使用红色普通锦囊牌造成伤害后，你摸一张牌；你使用红色普通锦囊牌额外结算一次。",
-
-  ["jiange__yushen"] = "熨身",
-  [":jiange__yushen"] = "出牌阶段各限一次，你可以令一名已受伤的其他角色回复1点体力并选择：1.视为其对你使用冰【杀】；2.视为你对其使用冰【杀】。",
-  ["#jiange__yushen"] = "熨身：令一名角色回复1点体力，%arg",
-
-  ["jiange__zhuwei"] = "筑围",
-  [":jiange__zhuwei"] = "当你的判定牌生效后，若为【杀】或伤害类锦囊牌，你可以获得之，并令当前回合角色本回合出牌阶段使用【杀】次数和手牌上限+1。",
-  ["#jiange__zhuwei1-invoke"] = "筑围：是否获得判定牌%arg？",
-  ["#jiange__zhuwei2-invoke"] = "筑围：是否获得判定牌%arg，并令 %dest 本回合使用【杀】次数上限和手牌上限+1？",
 }
 
 return jiange_mode

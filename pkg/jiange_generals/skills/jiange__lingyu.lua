@@ -10,16 +10,16 @@ Fk:loadTranslationTable{
 
 jiange__lingyu:addEffect(fk.EventPhaseStart, {
   anim_type = "support",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__lingyu.name) and player.phase == Player.Finish
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
       skill_name = jiange__lingyu.name,
       prompt = "#jiange__lingyu-invoke"
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:doIndicate(player.id, table.map(U.GetFriends(room, player, false), Util.IdMapper))
     player:turnOver()

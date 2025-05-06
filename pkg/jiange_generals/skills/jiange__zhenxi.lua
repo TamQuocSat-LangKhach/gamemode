@@ -11,10 +11,10 @@ Fk:loadTranslationTable{
 
 jiange__zhenxi:addEffect(fk.Damaged, {
   anim_type = "masochism",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return player:hasSkill(jiange__zhenxi.name) and table.contains(U.GetFriends(player.room, player), target)
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:doIndicate(player.id, {target.id})
     room:addPlayerMark(target, "@jiange__zhenxi", 1)

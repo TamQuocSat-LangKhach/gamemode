@@ -10,7 +10,7 @@ Fk:loadTranslationTable{
 }
 
 hunbi:addEffect(fk.Death, {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     if target == player then
       if player:hasSkill(hunbi.name, false, true) then
         local rest = player.room:getBanner(player.next.role == "lord" and "@&firstExiled" or "@&secondExiled") or {}
@@ -18,24 +18,24 @@ hunbi:addEffect(fk.Death, {
       end
     end
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
       skill_name = hunbi.name
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     player.tag["v11__hunbi"] = true
   end,
 })
 
 hunbi:addEffect("fk.Debut", {
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     if target == player then
       return player.tag["v11__hunbi"]
     end
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     player.tag["v11__hunbi"] = false
     local to = player.next

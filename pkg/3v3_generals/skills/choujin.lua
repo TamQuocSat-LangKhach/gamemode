@@ -5,44 +5,47 @@ local choujin = fk.CreateSkill {
 
 Fk:loadTranslationTable{
   ["choujin"] = "筹进",
+  [":choujin"] = "锁定技，亮将结束后，你选择一名对方角色：每回合限两次，当己方角色对该角色造成伤害后，该己方角色摸一张牌。",
+
   ["#choujin-choose"] = "筹进：标记一名对方角色，每回合限两次，己方角色对该角色造成伤害后摸一张牌",
   ["@@choujin"] = "筹进",
-  [":choujin"] = "锁定技，亮将结束后，你选择一名对方角色：每回合限两次，当己方角色对该角色造成伤害后，该己方角色摸一张牌。",
+
   ["$choujin1"] = "预则立，不预则废！",
   ["$choujin2"] = "就用你，给我军祭旗！",
 }
 
+local U = require "packages/utility/utility"
+
 choujin:addEffect(fk.GamePrepared, {
   anim_type = "special",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return player:hasSkill(choujin.name)
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     local to = room:askToChoosePlayers(player, {
-      targets = table.map(U.GetEnemies(room, player), Util.IdMapper),
+      targets = U.GetEnemies(room, player),
       min_num = 1,
       max_num = 1,
       prompt = "#choujin-choose",
       skill_name = choujin.name,
-      cancelable = false
-    })
-    to = room:getPlayerById(to[1])
+      cancelable = false,
+    })[1]
     room:setPlayerMark(to, "@@choujin", 1)
   end
 })
 
 choujin:addEffect(fk.Damage, {
-  can_trigger = function(self, event, target, player)
+  anim_type = "drawcard",
+  is_delay_effect = true,
+  can_trigger = function(self, event, target, player, data)
     return target and player:usedSkillTimes(choujin.name, Player.HistoryGame) > 0 and
       data.to:getMark("@@choujin") > 0 and
       table.contains(U.GetFriends(player.room, player), target) and
       table.contains(U.GetEnemies(player.room, player, true), data.to) and
-      player:getMark("choujin-turn") < 2
+      player:usedEffectTimes(self.name, Player.HistoryTurn) < 2
   end,
-  on_use = function(self, event, target, player)
-    local room = player.room
-    room:addPlayerMark(player, "choujin-turn", 1)
+  on_use = function(self, event, target, player, data)
     target:drawCards(1, choujin.name)
   end
 })

@@ -10,16 +10,16 @@ Fk:loadTranslationTable{
 
 jiange__longwei:addEffect(fk.EnterDying, {
   anim_type = "support",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return player:hasSkill(skill.name) and table.contains(U.GetFriends(player.room, player), target)
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
       skill_name = skill.name,
       prompt = "#jiange__longwei-invoke::" .. target.id
     })
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:doIndicate(player.id, {target.id})
     room:changeMaxHp(player, -1)

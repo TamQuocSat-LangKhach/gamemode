@@ -10,13 +10,13 @@ Fk:loadTranslationTable{
 
 jiange__benlei:addEffect(fk.EventPhaseStart, {
   anim_type = "offensive",
-  can_trigger = function(self, event, target, player)
+  can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiange__benlei.name) and player.phase == Player.Start and
       table.find(U.GetEnemies(player.room, player), function (p)
         return Fk.generals[p.general].jiange_machine
       end)
   end,
-  on_cost = function(self, event, target, player)
+  on_cost = function(self, event, target, player, data)
     local room = player.room
     local targets = table.filter(U.GetEnemies(room, player), function (p)
       return Fk.generals[p.general].jiange_machine
@@ -34,7 +34,7 @@ jiange__benlei:addEffect(fk.EventPhaseStart, {
       return true
     end
   end,
-  on_use = function(self, event, target, player)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:damage({
       from = player,
