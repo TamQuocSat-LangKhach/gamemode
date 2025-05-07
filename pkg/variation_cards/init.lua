@@ -264,6 +264,7 @@ Fk:loadTranslationTable{
   ["adaptation"] = "随机应变",
   [":adaptation"] = "锦囊牌<br/>"..
   "<b>效果</b>：此牌视为你本回合使用或打出的上一张基本牌或普通锦囊牌。",
+  ["adaptation_skill"] = "随机应变",
 }
 
 local foresight = fk.CreateCard{
