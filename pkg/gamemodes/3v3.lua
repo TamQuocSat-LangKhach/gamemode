@@ -345,7 +345,7 @@ local m_3v3_getLogic = function()
     local function CommandAction(marshal)
       room = marshal.room
       local friends = table.filter(room.alive_players, function (p)
-        return marshal.role[1] == p.role[1] and p:getMark("@!action-round") == 0
+        return marshal:isFriend(p) and p:getMark("@!action-round") == 0
       end)
       if #friends > 0 then
         local to = friends[1]
@@ -365,7 +365,7 @@ local m_3v3_getLogic = function()
         while to ~= marshal do
           if room.game_finished then break end
           local vanguards = table.filter(room.alive_players, function (p)
-            return p.role:endsWith("vanguard") and marshal.role[1] == p.role[1] and p:getMark("@!action-round") == 0
+            return p.role:endsWith("vanguard") and marshal:isFriend(p) and p:getMark("@!action-round") == 0
           end)
           if #vanguards > 0 then
             if #vanguards > 1 then
@@ -430,7 +430,7 @@ local m_3v3_mode = fk.CreateGameMode{
     else
       local canSurrender = true
       if table.find(Fk:currentRoom().players, function(p)
-        return (p.rest > 0 or not p.dead) and p ~= Self and p.role[1] == Self.role[1]
+        return (p.rest > 0 or not p.dead) and p ~= Self and Self:isFriend(p)
       end) then
         canSurrender = false
       end
@@ -497,6 +497,9 @@ local m_3v3_mode = fk.CreateGameMode{
     if killer and victim.role:endsWith("vanguard") and not killer.dead then
       killer:drawCards(2, "kill")
     end
+  end,
+  friend_enemy_judge = function (self, targetOne, targetTwo)
+    return targetOne.role[1] == targetTwo.role[1]
   end,
 }
 

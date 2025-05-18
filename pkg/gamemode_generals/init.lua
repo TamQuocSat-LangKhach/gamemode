@@ -125,9 +125,6 @@ Fk:loadTranslationTable{
   ["illustrator:chaos__fanchou"] = "枭瞳",
 
   ["~chaos__fanchou"] = "",
-
-  ["yangwu"] = "扬武",
-  [":yangwu"] = "出牌阶段限一次，你可以将一张<font color='red'>♥</font>手牌当【李代桃僵】使用；你使用的【李代桃僵】效果改为观看目标角色的手牌并获得。",
 }
 
 General:new(extension, "chaos__zhangji", "qun", 4):addSkills { "chaos__lulue" }

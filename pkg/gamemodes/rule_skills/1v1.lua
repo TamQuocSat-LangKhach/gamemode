@@ -2,6 +2,8 @@ local rule = fk.CreateSkill {
   name = "#m_1v1_rule&",
 }
 
+local U = require "packages/gamemode/pkg/1v1_generals/1v1_util"
+
 --登场
 rule:addEffect(fk.GameStart, {
   can_refresh = function(self, event, target, player, data)
@@ -9,8 +11,8 @@ rule:addEffect(fk.GameStart, {
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
-    room.logic:trigger("fk.Debut", player, player.general, false)
-    room.logic:trigger("fk.Debut", player.next, player.general, false)
+    room.logic:trigger(U.Debut, player, player.general, false)
+    room.logic:trigger(U.Debut, player.next, player.general, false)
   end,
 })
 
@@ -156,7 +158,7 @@ rule:addEffect(fk.BuryVictim, {
       room.logic:trigger(fk.DrawInitialCards, player, draw_data)
       drawInit(room, player, math.min(player.maxHp, 5))
       room.logic:trigger(fk.AfterDrawInitialCards, player, draw_data)
-      room.logic:trigger("fk.Debut", player, player.general, false)
+      room.logic:trigger(U.Debut, player, player.general, false)
     end)
   end,
 })

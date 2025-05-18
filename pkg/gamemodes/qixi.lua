@@ -336,6 +336,9 @@ local qixi_mode = fk.CreateGameMode{
       end
     end
   end,
+  friend_enemy_judge = function (self, targetOne, targetTwo)
+    return targetOne:getMark("qixi_couple") == targetTwo.id or targetTwo:getMark("qixi_couple") == targetOne.id
+  end,
 }
 
 Fk:loadTranslationTable{

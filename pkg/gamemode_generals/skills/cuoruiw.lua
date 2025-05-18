@@ -17,19 +17,17 @@ Fk:loadTranslationTable{
   ["$v22__cuoruiw2"] = "外物当舍，摄敌为重。",
 }
 
-local U = require "packages/utility/utility"
-
 cuoruiw:addEffect(fk.EventPhaseStart, {
   anim_type = "control",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(cuoruiw.name) and player.phase == Player.Play and
-      table.find(U.GetFriends(player.room, player), function(p)
+      table.find(player:getFriends(), function(p)
         return not p:isAllNude()
       end)
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(U.GetFriends(room, player), function(p)
+    local targets = table.filter(player:getFriends(), function(p)
       return not p:isAllNude()
     end)
     if not table.find(player:getCardIds("hej"), function (id)
@@ -91,7 +89,7 @@ cuoruiw:addEffect(fk.EventPhaseStart, {
     if player.dead then return end
 
     local choices = {}
-    for _, p in ipairs(U.GetEnemies(room, player)) do
+    for _, p in ipairs(player:getEnemies()) do
       if not p:isKongcheng() then
         table.insertIfNeed(choices, "v22__cuoruiw_hand")
       end
@@ -109,7 +107,7 @@ cuoruiw:addEffect(fk.EventPhaseStart, {
     local total = 2
     if choice == "v22__cuoruiw_equip" then
       while total > 0 and not player.dead do
-        local targets = table.filter(U.GetEnemies(room, player), function(p)
+        local targets = table.filter(player:getEnemies(), function(p)
           return table.find(p:getCardIds("e"), function(id)
             return Fk:getCardById(id).color == color
           end) ~= nil
@@ -140,7 +138,7 @@ cuoruiw:addEffect(fk.EventPhaseStart, {
       end
     else
       while total > 0 and not player.dead do
-        local targets = table.filter(U.GetEnemies(room, player), function(p)
+        local targets = table.filter(player:getEnemies(), function(p)
           return not p:isKongcheng()
         end)
         if #targets == 0 then return end

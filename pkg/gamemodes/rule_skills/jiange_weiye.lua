@@ -10,13 +10,11 @@ Fk:loadTranslationTable{
   ["#jiange__weiye-discard"] = "魏业：弃置一张牌，否则 %src 摸一张牌",
 }
 
-local U = require "packages/utility/utility"
-
 weiye:addEffect(fk.EventPhaseStart, {
   anim_type = "control",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Start and
-      not player:isNude() and #U.GetEnemies(player.room, player) > 0
+      not player:isNude() and #player:getEnemies() > 0
   end,
   on_cost = function (self, event, target, player, data)
     local room = player.room

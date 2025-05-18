@@ -9,13 +9,11 @@ Fk:loadTranslationTable{
   ["#jiuzhu-invoke"] = "救主：你可以弃一张牌并失去1点体力，令 %dest 回复1点体力",
 }
 
-local U = require "packages/utility/utility"
-
 jiuzhu:addEffect(fk.AskForPeaches, {
   anim_type = "support",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jiuzhu.name) and
-      table.contains(U.GetFriends(player.room, player, false), data.who) and
+      data.who:isFriend(player) and
       player.hp > 1 and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)

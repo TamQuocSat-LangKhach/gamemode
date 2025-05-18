@@ -9,14 +9,11 @@ Fk:loadTranslationTable{
   ["#jiange__fangong-slash"] = "反攻：你可以对 %dest 使用一张【杀】",
 }
 
-local U = require "packages/utility/utility"
-
 fangong:addEffect(fk.CardUseFinished, {
   anim_type = "offensive",
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(fangong.name) and
-      table.contains(U.GetEnemies(player.room, player), target) and
-      table.contains(data.tos, player)
+    return player:hasSkill(fangong.name) and target:isEnemy(player) and
+      not target.dead and table.contains(data.tos, player)
   end,
   on_cost = function (self, event, target, player, data)
     local room = player.room

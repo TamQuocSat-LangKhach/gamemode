@@ -59,9 +59,7 @@ rule:addEffect(fk.BeforeDrawCard, {
   priority = 0.001,
   can_refresh = function(self, event, target, player, data)
     return target == player and data.skillName == "ex_nihilo_skill" and
-      2 * #table.filter(player.room.alive_players, function (p)
-        return p.role[1] == player.role[1]
-      end) < #player.room.alive_players
+      #player:getFriends() < #player:getEnemies()
   end,
   on_refresh = function(self, event, target, player, data)
     data.skillName = "v33__ex_nihilo_skill"

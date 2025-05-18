@@ -14,17 +14,15 @@ Fk:loadTranslationTable{
   ["$v33__ganglie2"] = "以彼之道，还施彼身！",
 }
 
-local U = require "packages/utility/utility"
-
 ganglie:addEffect(fk.Damaged, {
   anim_type = "masochism",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(ganglie.name) and #U.GetEnemies(player.room, player) > 0
+    return target == player and player:hasSkill(ganglie.name) and #player:getEnemies() > 0
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local to = room:askToChoosePlayers(player, {
-      targets = U.GetEnemies(room, player),
+      targets = player:getEnemies(),
       min_num = 1,
       max_num = 1,
       prompt = "#v33__ganglie-choose",

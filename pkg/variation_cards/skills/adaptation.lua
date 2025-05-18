@@ -25,7 +25,6 @@ local spec = {
   end,
   on_refresh = function(self, event, target, player, data)
     player.room:setPlayerMark(player, "adaptation-turn", data.card.name)
-    player:filterHandcards()
   end,
 }
 

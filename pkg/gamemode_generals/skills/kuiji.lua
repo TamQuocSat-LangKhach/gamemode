@@ -15,8 +15,6 @@ Fk:loadTranslationTable{
   ["$v22__kuiji2"] = "舍得一身剐，不畏君王威。",
 }
 
-local U = require "packages/utility/utility"
-
 kuiji:addEffect("active", {
   anim_type = "offensive",
   prompt = "#v22__kuiji",
@@ -38,8 +36,8 @@ kuiji:addEffect("active", {
     if player.dead then return end
     player:drawCards(1, kuiji.name)
     if player.dead then return end
-    local targets = table.filter(U.GetEnemies(room, player), function(p)
-      return table.every(U.GetEnemies(room, player), function(q)
+    local targets = table.filter(player:getEnemies(), function(p)
+      return table.every(player:getEnemies(), function(q)
         return q.hp <= p.hp
       end)
     end)
@@ -69,8 +67,8 @@ kuiji:addEffect(fk.EnterDying, {
     if data.damage and data.damage.skillName == kuiji.name and not player.dead then
       local skill_event = player.room.logic:getCurrentEvent():findParent(GameEvent.SkillEffect)
       if skill_event and skill_event.data.skill.name == kuiji.name and skill_event.data.who == player then
-        local targets = table.filter(U.GetFriends(player.room, player), function(p)
-          return p:isWounded() and table.every(U.GetFriends(player.room, player), function(q)
+        local targets = table.filter(player:getFriends(), function(p)
+          return p:isWounded() and table.every(player:getFriends(), function(q)
             return q.hp >= p.hp
           end)
         end)

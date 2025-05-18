@@ -9,12 +9,10 @@ Fk:loadTranslationTable{
   ["#v33__huanshi-invoke"] = "缓释：是否打出一张牌修改 %dest 的判定牌？",
 }
 
-local U = require "packages/utility/utility"
-
 huanshi:addEffect(fk.AskForRetrial, {
   anim_type = "support",
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(huanshi.name) and table.contains(U.GetFriends(player.room, player), target) and
+    return player:hasSkill(huanshi.name) and target:isFriend(player) and
       not (player:isNude() and #player:getHandlyIds() == 0)
   end,
   on_cost = function(self, event, target, player, data)

@@ -14,8 +14,6 @@ Fk:loadTranslationTable{
   ["$choujin2"] = "就用你，给我军祭旗！",
 }
 
-local U = require "packages/utility/utility"
-
 choujin:addEffect(fk.GamePrepared, {
   anim_type = "special",
   can_trigger = function(self, event, target, player, data)
@@ -24,7 +22,7 @@ choujin:addEffect(fk.GamePrepared, {
   on_use = function(self, event, target, player, data)
     local room = player.room
     local to = room:askToChoosePlayers(player, {
-      targets = U.GetEnemies(room, player),
+      targets = player:getEnemies(),
       min_num = 1,
       max_num = 1,
       prompt = "#choujin-choose",
@@ -41,8 +39,7 @@ choujin:addEffect(fk.Damage, {
   can_trigger = function(self, event, target, player, data)
     return target and player:usedSkillTimes(choujin.name, Player.HistoryGame) > 0 and
       data.to:getMark("@@choujin") > 0 and
-      table.contains(U.GetFriends(player.room, player), target) and
-      table.contains(U.GetEnemies(player.room, player, true), data.to) and
+      target:isFriend(player) and data.to:isEnemy(player) and
       player:usedEffectTimes(self.name, Player.HistoryTurn) < 2
   end,
   on_use = function(self, event, target, player, data)

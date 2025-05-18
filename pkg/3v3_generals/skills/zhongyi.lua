@@ -9,8 +9,6 @@ Fk:loadTranslationTable{
   ["#zhongyi"] = "忠义：将任意张红色牌置于武将牌上，友方使用【杀】造成伤害时移去一张，此伤害+1",
 }
 
-local U = require "packages/utility/utility"
-
 zhongyi:addEffect("active", {
   anim_type = "offensive",
   prompt = "#zhongyi",
@@ -35,8 +33,7 @@ zhongyi:addEffect(fk.DamageCaused, {
   can_trigger = function(self, event, target, player, data)
     return target and #player:getPile(zhongyi.name) > 0 and
       data.card and data.card.trueName == "slash" and
-      table.contains(U.GetFriends(player.room, player), target) and
-      table.contains(U.GetEnemies(player.room, player, true), data.to)
+      target:isFriend(player) and data.to:isEnemy(player)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

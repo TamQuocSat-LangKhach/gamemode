@@ -5,9 +5,7 @@ local skill = fk.CreateSkill {
 skill:addEffect("cardskill", {
   prompt = function (self, player, selected_cards, selected_targets, extra_data)
     local n = 2
-    if 2 * #table.filter(Fk:currentRoom().alive_players, function (p)
-      return p.role[1] == player.role[1]
-    end) < #Fk:currentRoom().alive_players then
+    if #player:getFriends() < #player:getEnemies() then
       n = 3
     end
     return "#v33__ex_nihilo_skill:::"..n
@@ -17,9 +15,7 @@ skill:addEffect("cardskill", {
   on_effect = function(self, room, effect)
     local target = effect.to
     if target.dead then return end
-    if 2 * #table.filter(room.alive_players, function (p)
-      return p.role[1] == target.role[1]
-    end) < #room.alive_players then
+    if #target:getFriends() < #target:getEnemies() then
       target:drawCards(3, skill.name)
     else
       target:drawCards(2, skill.name)

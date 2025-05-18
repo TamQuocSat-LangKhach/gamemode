@@ -1,5 +1,5 @@
 local yicheng = fk.CreateSkill {
-  name = "v33__yicheng"
+  name = "v33__yicheng",
 }
 
 Fk:loadTranslationTable{
@@ -13,14 +13,11 @@ Fk:loadTranslationTable{
   ["$v33__yicheng2"] = "待末将布下疑城，以退曹贼。",
 }
 
-local U = require "packages/utility/utility"
-
 yicheng:addEffect(fk.TargetConfirmed, {
   anim_type = "support",
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(yicheng.name) and
-      table.contains(U.GetFriends(player.room, player), target) and data.card.trueName == "slash" and
-      table.contains(U.GetEnemies(player.room, player, true), data.from)
+    return player:hasSkill(yicheng.name) and data.card.trueName == "slash" and
+      target:isFriend(player) and data.from:isEnemy(player)
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room

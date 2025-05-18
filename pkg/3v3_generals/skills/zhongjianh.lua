@@ -12,8 +12,6 @@ Fk:loadTranslationTable{
   ["$zhongjianh2"] = "密计交于将军，可解燃眉之困。",
 }
 
-local U = require "packages/utility/utility"
-
 zhongjianh:addEffect("active", {
   anim_type = "support",
   prompt = "#zhongjianh",
@@ -26,7 +24,7 @@ zhongjianh:addEffect("active", {
     return #selected == 0
   end,
   target_filter = function(self, player, to_select, selected)
-    return #selected == 0 and table.contains(U.GetFriends(Fk:currentRoom(), player, false), to_select)
+    return #selected == 0 and to_select ~= player and to_select:isFriend(player)
   end,
   on_use = function(self, room, effect)
     local player = effect.from

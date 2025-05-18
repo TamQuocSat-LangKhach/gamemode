@@ -1,36 +1,37 @@
 local cangji = fk.CreateSkill {
-  name = "v11__cangji"
+  name = "v11__cangji",
 }
 
 Fk:loadTranslationTable{
-  ['v11__cangji'] = '藏机',
-  [':v11__cangji'] = '当你死亡时，你可以将你装备区里的所有牌移出游戏，然后你的下一名武将登场时将这些牌置入你的装备区。',
+  ["v11__cangji"] = "藏机",
+  [":v11__cangji"] = "当你死亡时，你可以将你装备区里的所有牌移出游戏，然后你的下一名武将登场时将这些牌置入你的装备区。",
 }
 
-cangji:addEffect({fk.Death, "fk.Debut"}, {
+local U = require "packages/gamemode/pkg/1v1_generals/1v1_util"
+
+cangji:addEffect(fk.Death, {
   can_trigger = function(self, event, target, player, data)
-    if target == player then
-      if event == fk.Death then
-        return player:hasSkill(cangji.name, false, true) and #player:getCardIds("e") > 0
-      else
-        return player.tag["v11__cangji"] ~= nil
-      end
-    end
-  end,
-  on_cost = function (skill, event, target, player, data)
-    return event ~= fk.Death or player.room:askToSkillInvoke(player, { skill_name = cangji.name })
+    return target == player and player:hasSkill(cangji.name, false, true) and #player:getCardIds("e") > 0
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if event == fk.Death then
-      local cards = player:getCardIds("e")
-      player.tag["v11__cangji"] = cards
-      room:moveCardTo(cards, Card.Void, nil, fk.ReasonJustMove, cangji.name, nil, true, player.id)
-    else
-      local cards = table.simpleClone(player.tag["v11__cangji"])
-      player.tag["v11__cangji"] = nil
-      room:moveCardIntoEquip(player, cards, cangji.name, false, player)
-    end
+    local cards = player:getCardIds("e")
+    player.tag[cangji.name] = cards
+    room:moveCardTo(cards, Card.Void, nil, fk.ReasonJustMove, cangji.name, nil, true, player)
+  end,
+})
+
+cangji:addEffect(U.Debut, {
+  mute = true,
+  is_delay_effect = true,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player.tag[cangji.name] ~= nil
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local cards = table.simpleClone(player.tag[cangji.name])
+    player.tag[cangji.name] = nil
+    room:moveCardIntoEquip(player, cards, cangji.name, false, player)
   end,
 })
 
