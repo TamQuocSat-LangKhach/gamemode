@@ -110,8 +110,6 @@ local chaos_getLogic = function()
     room:returnToGeneralPile(generals)
 
     room:askToChooseKingdom(players)
-
-    room:addSkill("#chaos_rule&")
   end
 
   return chaos_logic
@@ -121,7 +119,7 @@ local chaos_mode = fk.CreateGameMode{
   name = "chaos_mode",
   minPlayer = 6,
   maxPlayer = 8,
-  rule = Fk.skills["#chaos_rule&"] --[[@as TriggerSkill]],
+  rule = "#chaos_rule&",
   logic = chaos_getLogic,
   surrender_func = function(self, playedTime)
     return { {

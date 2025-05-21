@@ -404,7 +404,6 @@ local m_3v3_getLogic = function()
 
   function m_3v3_logic:action()
     local room = self.room
-    room:addSkill(Fk.skills["#m_3v3_rule&"])
     self:trigger(fk.GamePrepared)
 
     GameEvent.DrawInitial:create():exec()
@@ -423,7 +422,7 @@ local m_3v3_mode = fk.CreateGameMode{
   minPlayer = 6,
   maxPlayer = 6,
   logic = m_3v3_getLogic,
-  rule = Fk.skills["#m_3v3_rule&"] --[[@as TriggerSkill]],
+  rule = "#m_3v3_rule&",
   surrender_func = function(self, playedTime)
     if Self.role:endsWith("vanguard") then
       return { { text = "vanguard_never_surrender", passed = false } }

@@ -135,8 +135,6 @@ local m_1v3_getLogic = function()
       end
       room:handleAddLoseSkills(p, "1v3_recast_weapon&", nil, false)
     end
-
-    room:addSkill("#m_1v3_rule&")
   end
 
   ---@class HulaoRound: GameEvent.Round
@@ -189,7 +187,7 @@ local m_1v3_mode = fk.CreateGameMode{
   name = "m_1v3_mode",
   minPlayer = 4,
   maxPlayer = 4,
-  rule = Fk.skills["#m_1v3_rule&"] --[[@as TriggerSkill]],
+  rule = "#m_1v3_rule&",
   logic = m_1v3_getLogic,
   surrender_func = function(self, playedTime)
     local surrenderJudge = { { text = "time limitation: 5 min", passed = playedTime >= 300 },
@@ -219,8 +217,8 @@ local m_1v3_mode = fk.CreateGameMode{
     local n = room.settings.enableDeputy and 2 or 1
     for _, p in ipairs(room.alive_players) do
       if p.role == victim.role and not p.dead then
-       if n == 2 then
-         if room:askToSkillInvoke(p, {
+        if n == 2 then
+          if room:askToSkillInvoke(p, {
           skill_name = "PickLegacy",
           prompt = "#m_1v3_death_draw",
         }) then

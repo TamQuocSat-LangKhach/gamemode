@@ -240,7 +240,6 @@ local qixi_get_logic = function()
       room:handleAddLoseSkills(p, "qixi_jieban&")
       attachRandomSkill(p)
     end
-    room:addSkill(Fk.skills["#qixi_rule&"])
   end
 
   return qixi_logic
@@ -251,7 +250,7 @@ local qixi_mode = fk.CreateGameMode{
   minPlayer = 4,
   maxPlayer = 8,
   logic = qixi_get_logic,
-  rule = Fk.skills["#qixi_rule&"] --[[@as TriggerSkill]],
+  rule = "#qixi_rule&",
   winner_getter = function(self, victim)
     local winner = "renegade"
     if not victim.surrendered and victim.rest > 0 then

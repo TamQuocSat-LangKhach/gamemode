@@ -90,7 +90,6 @@ local zombie_getLogic = function()
       room:broadcastProperty(p, "role")
     end
     room:setTag("SkipNormalDeathProcess", true)
-    room:addSkill("#zombie_rule&")
   end
 
   return zombie_logic
@@ -101,7 +100,7 @@ local zombie_mode = fk.CreateGameMode{
   minPlayer = 8,
   maxPlayer = 8,
   logic = zombie_getLogic,
-  --rule = Fk.skills["#zombie_rule&"] --[[@as TriggerSkill]]
+  rule = "#zombie_rule&",
   winner_getter = function(self, victim)
     if not victim.surrendered and victim.rest > 0 then
       return ""

@@ -140,8 +140,6 @@ local m_1v1_getLogic = function()
     updataGeneralPile(lord)
     updataGeneralPile(nonlord)
     room:askToChooseKingdom(room.players)
-
-    room:addSkill(Fk.skills["#m_1v1_rule&"])
   end
 
   return m_1v1_logic
@@ -151,7 +149,7 @@ local m_1v1_mode = fk.CreateGameMode{
   name = "m_1v1_mode",
   minPlayer = 2,
   maxPlayer = 2,
-  rule = Fk.skills["#m_1v1_rule&"] --[[@as TriggerSkill]],
+  rule = "#m_1v1_rule&",
   logic = m_1v1_getLogic,
   surrender_func = function(self, playedTime)
     return { { text = "time limitation: 2 min", passed = playedTime >= 120 } }

@@ -282,7 +282,6 @@ local vanished_dragon_getLogic = function()
         room:handleAddLoseSkills(p, skill, nil, false)
       end
     end
-    room:addSkill(Fk.skills["#vanished_dragon_rule&"])
   end
 
   return vanished_dragon_logic
@@ -293,7 +292,7 @@ local vanished_dragon = fk.CreateGameMode{
   minPlayer = 6,
   maxPlayer = 8,
   main_mode = "role_mode",
-  --rule = Fk.skills["#vanished_dragon_rule&"] --[[@as TriggerSkill]]
+  rule = "#vanished_dragon_rule&",
   logic = vanished_dragon_getLogic,
   surrender_func = function(self, playedTime)
     return Fk.game_modes["aaa_role_mode"].surrenderFunc(self, playedTime)
