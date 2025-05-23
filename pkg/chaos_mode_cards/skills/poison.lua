@@ -12,7 +12,7 @@ skill:addEffect("cardskill", {
   end,
   on_effect = function(self, room, effect)
     if effect.to.dead then return end
-    room:loseHp(effect.to, 1, skill.name)
+    room:loseHp(effect.to, 1, "poison")
   end,
 })
 

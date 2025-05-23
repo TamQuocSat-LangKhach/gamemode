@@ -74,6 +74,15 @@ Fk:loadTranslationTable{
   ["illustrator:jiange__zhangfei"] = "鬼画府",
 }
 
+local huangzhong = General:new(extension, "jiange__huangzhong", "shu", 5)
+huangzhong.jiange_hero = true
+huangzhong:addSkills { "jiange__qixian", "jiange__jinggong", "jiange__beishi" }
+Fk:loadTranslationTable{
+  ["jiange__huangzhong"] = "神箭汉升",
+  ["#jiange__huangzhong"] = "神箭汉升",
+  ["illustrator:jiange__huangzhong"] = "一串糖葫芦",
+}
+
 local caozhen = General:new(extension, "jiange__caozhen", "wei", 5)
 caozhen.jiange_hero = true
 caozhen:addSkills { "jiange__chiying", "jiange__jingfan", "jiange__zhenxi" }
@@ -135,6 +144,15 @@ Fk:loadTranslationTable{
   ["jiange__dianwei"] = "古之恶来",
   ["#jiange__dianwei"] = "古之恶来",
   ["illustrator:jiange__dianwei"] = "鬼画府",
+}
+
+local yujin = General:new(extension, "jiange__yujin", "wei", 5)
+yujin.jiange_hero = true
+yujin:addSkills { "jiange__hanjun", "jiange__pigua", "jiange__zhengji" }
+Fk:loadTranslationTable{
+  ["jiange__yujin"] = "毅勇文则",
+  ["#jiange__yujin"] = "毅勇文则",
+  ["illustrator:jiange__yujin"] = "XXX",
 }
 
 local qinglong = General:new(extension, "jiange__qinglong", "shu", 5)

@@ -27,9 +27,9 @@ skill:addEffect(fk.BeforeCardsMove, {
             (move.moveVisible or table.contains({Card.PlayerEquip, Card.Processing, Card.DiscardPile}, move.toArea)) then
             if Fk:getCardById(info.cardId, false).name == "es__poison" then
               move.extra_data = move.extra_data or {}
-              local dat = move.extra_data.poison or {}
+              local dat = move.extra_data.es__poison or {}
               table.insert(dat, player.id)
-              move.extra_data.poison = dat
+              move.extra_data.es__poison = dat
             end
           end
         end
@@ -44,8 +44,8 @@ skill:addEffect(fk.AfterCardsMove, {
   mute = true,
   can_trigger = function(self, event, target, player, data)
     for _, move in ipairs(data) do
-      if move.extra_data and move.extra_data.poison then
-        if table.contains(move.extra_data.poison, player.id) and not player.dead then
+      if move.extra_data and move.extra_data.es__poison then
+        if table.contains(move.extra_data.es__poison, player.id) and not player.dead then
           return true
         end
       end
@@ -62,8 +62,8 @@ skill:addEffect(fk.AfterCardsMove, {
     local n = 0
     local ids = {}
     for _, move in ipairs(data) do
-      if move.extra_data and move.extra_data.poison then
-        n = n + #table.filter(move.extra_data.poison, function(id)
+      if move.extra_data and move.extra_data.es__poison then
+        n = n + #table.filter(move.extra_data.es__poison, function(id)
           return id == player.id
         end)
       end
@@ -77,7 +77,7 @@ skill:addEffect(fk.AfterCardsMove, {
     end
     for _ = 1, n, 1 do
       if not player.dead then
-        player.room:loseHp(player, 1, "es__poison")
+        player.room:loseHp(player, 1, "poison")
       end
     end
     ids = table.filter(ids, function(id)
