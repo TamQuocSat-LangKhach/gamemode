@@ -43,19 +43,6 @@ local m_2v2_getLogic = function()
       no_indicate = true,
     })[1]
 
-    -- local choices = table.map(getOtherPlayers(room, owner), function(p)
-    --   return "选择 " .. p._splayer:getScreenName() .. " 作为队友" 
-    -- end)
-    -- table.insert(choices, "Cancel")
-    -- local ownersbuddy = room:askForChoice(owner, choices, "", "#m_2v2_choose_buddy")
-    -- local buddy
-    -- if ownersbuddy == "Cancel" then
-    --   buddy = nil
-    -- else
-    --   local name = ownersbuddy:sub(8, -14)
-    --   buddy = getPlayerByScreenName(room, name)
-    -- end
-
     if buddy then
       local buddy_table = { 4, 3, 2, 1 }
       local owner_seat = math.random(1, 4)
