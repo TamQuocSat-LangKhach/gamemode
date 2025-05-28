@@ -62,9 +62,15 @@ rule:addEffect(fk.GameOverJudge, {
   end,
 })
 
-local function drawInit(room, player, n)
+local function drawInit(room, player, n, fix_ids)
   -- TODO: need a new function to call the UI
-  local cardIds = room:getNCards(n)
+  local cardIds = table.random(room.draw_pile, n)
+  if fix_ids then
+    cardIds = table.random(fix_ids, n)
+    if #cardIds < n then
+      table.insertTable(cardIds, table.random(room.draw_pile, n - #cardIds))
+    end
+  end
   player:addCards(Player.Hand, cardIds)
   for _, id in ipairs(cardIds) do
     Fk:filterCard(id, player)
@@ -78,7 +84,7 @@ local function drawInit(room, player, n)
   }
   for _, id in ipairs(cardIds) do
     table.insert(move_to_notify.moveInfo,
-    { cardId = id, fromArea = Card.DrawPile })
+    { cardId = id, fromArea = room:getCardArea(id) })
   end
   room:notifyMoveCards(nil, {move_to_notify})
 
@@ -86,6 +92,7 @@ local function drawInit(room, player, n)
     table.removeOne(room.draw_pile, id)
     room:setCardArea(id, Card.PlayerHand, player.id)
   end
+  room:syncDrawPile()
 end
 
 local function removeGeneral(generals, g)
