@@ -22,7 +22,7 @@ lulue:addEffect("active", {
     return not player:prohibitDiscard(to_select)
   end,
   target_filter = function(self, player, to_select, selected, selected_cards)
-    return #selected_cards > 0 and to_select == player and
+    return #selected_cards > 0 and to_select ~= player and
       #selected_cards == #to_select:getCardIds("e")
   end,
   on_use = function(self, room, effect)

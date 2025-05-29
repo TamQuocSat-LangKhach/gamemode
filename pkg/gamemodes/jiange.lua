@@ -178,8 +178,9 @@ local jiange_getLogic = function()
     local ban_list = {
       --变势力类
       "js__xuyou", "js__lvbu", "js__jiangwei", "mou__sunshangxiang", "ol__mengda", "qyt__xiahoushi", "tw__xiahouba",
+      "yongkai", "shendan", "shenyi",
       --变身类
-      "zhaoxiang", "ol__baosanniang", "qyt__jiangwei", "ty__baosanniang",
+      "zhaoxiang", "ol__baosanniang", "qyt__jiangwei", "ty__baosanniang", "licuilianquanding",
       --身份类
       "ol__dongzhao", "huanghao",
       --imba
